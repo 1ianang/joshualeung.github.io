@@ -177,10 +177,76 @@ Glowify的主要特性如下:
 <p><a class="simple-lightbox" href="/assets/glowify-status-badge.png"><img   src="/images/loading.svg" data-src="/assets/glowify-status-badge.png"  alt="Glowify 状态标记" lazyload></a></p>
 <p>开启 Glowify 后， 选择任意文本便会弹出 Glowify 的工具栏。 工具栏上的按钮功能依次为 解释、翻译、高亮、评论、复制。 点击按钮即可执行对应功能。</p>
 <p>祝你阅读愉快！</p>
-<h2 id="使用技巧"><a href="#使用技巧" class="headerlink" title="使用技巧"></a>使用技巧</h2><p>待补充。</p>
-<h3 id="侧面板"><a href="#侧面板" class="headerlink" title="侧面板"></a>侧面板</h3><p>待补充。</p>
-<h3 id="Notion-数据同步"><a href="#Notion-数据同步" class="headerlink" title="Notion 数据同步"></a>Notion 数据同步</h3><p>待补充。</p>
-<h3 id="自定义-Prompt"><a href="#自定义-Prompt" class="headerlink" title="自定义 Prompt"></a>自定义 Prompt</h3><h2 id="常见问题"><a href="#常见问题" class="headerlink" title="常见问题"></a>常见问题</h2><ol>
+<h2 id="使用技巧"><a href="#使用技巧" class="headerlink" title="使用技巧"></a>使用技巧</h2><h3 id="URL白名单"><a href="#URL白名单" class="headerlink" title="URL白名单"></a>URL白名单</h3><p>Glowify 默认在所有网页上是关闭的， 需要点击其工具栏图标启用。若希望在部分网页上默认开启Glowify, 可以将其添加到白名单中。点击 Glowify 图标， 然后点击 “Options” 按钮， 在 “URL Whitelist” 中添加你希望Glowify启用的URL。 支持通配符。如下所示:</p>
+<figure class="highlight txt"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">https://x.com/*</span><br><span class="line">https://gulfnews.com/*</span><br><span class="line">https://www.bbc.com/news/articles/*</span><br></pre></td></tr></table></figure>
+
+<h3 id="侧面板"><a href="#侧面板" class="headerlink" title="侧面板"></a>侧面板</h3><p>在网页上打开右键菜单， 通过 “Glowify” -&gt; “Show All Glows” 打开侧面板。 侧面板中， 你可以查看所有Glowify笔记， 包括高亮、翻译、解释、评论等。点击笔记， 页面会自动定位到对应的位置。 在侧面板的底部， 可以隐藏、显示、删除或者导出所有笔记。 </p>
+<h3 id="Notion-数据同步"><a href="#Notion-数据同步" class="headerlink" title="Notion 数据同步"></a>Notion 数据同步</h3><p>为了与Notion数据库同步， 你需要创建一个用于存储Glowify笔记的Notion数据库以及一个Notion集成。</p>
+<h4 id="创建-Notion-数据库"><a href="#创建-Notion-数据库" class="headerlink" title="创建 Notion 数据库"></a>创建 Notion 数据库</h4><h4 id="方式一-通过复制Glowify数据库模板创建"><a href="#方式一-通过复制Glowify数据库模板创建" class="headerlink" title="方式一: 通过复制Glowify数据库模板创建"></a>方式一: 通过复制Glowify数据库模板创建</h4><p>打开 <a target="_blank" rel="noopener" href="https://www.notion.so/ce34483fe9d048a380d850d682fae25d?v=fff36e411feb814b8b80000c46bb500a">Glowify Notion 数据库模板</a>, 点击右上角的按钮， 在弹出的菜单中选择 “Duplicate” 按钮， 即可复制一个Glowify数据库模板。</p>
+<h4 id="方式二-手动创建"><a href="#方式二-手动创建" class="headerlink" title="方式二: 手动创建"></a>方式二: 手动创建</h4><table>
+<thead>
+<tr>
+<th align="center">字段名</th>
+<th align="center">类型</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="center"><div style="width: 200px;">excerpt</div></td>
+<td align="center"><div style="width: 100px;">title</div></td>
+</tr>
+<tr>
+<td align="center"><div style="width: 200px;">pageUrl</div></td>
+<td align="center"><div style="width: 100px;">url</div></td>
+</tr>
+<tr>
+<td align="center">highlightId</td>
+<td align="center">rich_text</td>
+</tr>
+<tr>
+<td align="center">pageTitle</td>
+<td align="center">rich_text</td>
+</tr>
+<tr>
+<td align="center">comment</td>
+<td align="center">rich_text</td>
+</tr>
+<tr>
+<td align="center">created</td>
+<td align="center">date</td>
+</tr>
+<tr>
+<td align="center">updated</td>
+<td align="center">date</td>
+</tr>
+<tr>
+<td align="center">occurrence</td>
+<td align="center">rich_text</td>
+</tr>
+</tbody></table>
+<h3 id="创建-Notion-集成："><a href="#创建-Notion-集成：" class="headerlink" title="创建 Notion 集成："></a>创建 Notion 集成：</h3><p>访问 Notion Integration 页面。<br>点击“创建新集成”并获取您的 API 密钥。<br>关联 Notion 数据库。</p>
+<h3 id="配置-Glowify"><a href="#配置-Glowify" class="headerlink" title="配置 Glowify"></a>配置 Glowify</h3><ul>
+<li>打开 Glowify 选项页面。</li>
+<li>勾选 “Save to Notion” 选项。</li>
+<li>输入您的 Notion 数据库 ID 和 API 密钥。</li>
+<li>点击“保存”以完成设置。</li>
+</ul>
+<h3 id="自定义-Prompt"><a href="#自定义-Prompt" class="headerlink" title="自定义 Prompt"></a>自定义 Prompt</h3><p>对于 Glowify 的翻译和解释功能， 你可以通过自定义 Prompt 来定制Glowify的输出行为。</p>
+<p>进入 Glowify 选项页面，可以看到以下4个Prompt自定义字段:</p>
+<ul>
+<li><code>System Prompt for Translate</code>: 翻译System Prompt</li>
+<li><code>System Prompt for Explain</code>: 解释System Prompt</li>
+<li><code>User Prompt for Translate</code>: 翻译User Prompt</li>
+<li><code>User Prompt for Explain</code>: 解释User Prompt</li>
+</ul>
+<p>在System Prompt中， 你可以对输出的内容、格式、风格等进行定制。 例如， 你可以告诉LLM, 在翻译时， 除了给出翻译结果， 还给出涉及的相关语法知识点以及背景知识。 </p>
+<p>User Prompt主要与数据输入格式有关， 不建议修改。</p>
+<p>在Prompt中， 你可以引用一些变量， 可用的变量如下:</p>
+<ul>
+<li><code>&#123;&#123;text&#125;&#125;</code>: 选中的文本</li>
+<li><code>&#123;&#123;context&#125;&#125;</code>: 选中的文本的上下文</li>
+<li><code>&#123;&#123;language&#125;&#125;</code>: 目标语言</li>
+</ul>
+<h2 id="常见问题"><a href="#常见问题" class="headerlink" title="常见问题"></a>常见问题</h2><ol>
 <li>如果在选择了文本后， Glowify的工具栏没有弹出， 可能原因:</li>
 </ol>
 <ul>
@@ -201,7 +267,7 @@ Glowify的主要特性如下:
         </div>
           
         <div class="top-div">
-          <ol class="top-box"><li class="top-box-item top-box-level-2"><a class="top-box-link" href="#Glowify-%E6%98%AF%E4%BB%80%E4%B9%88%EF%BC%9F"><span class="top-box-text">Glowify 是什么？</span></a></li><li class="top-box-item top-box-level-2"><a class="top-box-link" href="#%E5%A6%82%E4%BD%95%E5%AE%89%E8%A3%85"><span class="top-box-text">如何安装</span></a><ol class="top-box-child"><li class="top-box-item top-box-level-3"><a class="top-box-link" href="#%E9%80%9A%E8%BF%87-GWS-%E5%AE%89%E8%A3%85"><span class="top-box-text">通过 GWS 安装</span></a></li><li class="top-box-item top-box-level-3"><a class="top-box-link" href="#%E6%89%8B%E5%8A%A8%E5%AE%89%E8%A3%85"><span class="top-box-text">手动安装</span></a></li></ol></li><li class="top-box-item top-box-level-2"><a class="top-box-link" href="#%E5%87%86%E5%A4%87%E5%B7%A5%E4%BD%9C"><span class="top-box-text">准备工作</span></a></li><li class="top-box-item top-box-level-2"><a class="top-box-link" href="#%E5%BC%80%E5%A7%8B%E4%BD%BF%E7%94%A8"><span class="top-box-text">开始使用</span></a></li><li class="top-box-item top-box-level-2"><a class="top-box-link" href="#%E4%BD%BF%E7%94%A8%E6%8A%80%E5%B7%A7"><span class="top-box-text">使用技巧</span></a><ol class="top-box-child"><li class="top-box-item top-box-level-3"><a class="top-box-link" href="#%E4%BE%A7%E9%9D%A2%E6%9D%BF"><span class="top-box-text">侧面板</span></a></li><li class="top-box-item top-box-level-3"><a class="top-box-link" href="#Notion-%E6%95%B0%E6%8D%AE%E5%90%8C%E6%AD%A5"><span class="top-box-text">Notion 数据同步</span></a></li><li class="top-box-item top-box-level-3"><a class="top-box-link" href="#%E8%87%AA%E5%AE%9A%E4%B9%89-Prompt"><span class="top-box-text">自定义 Prompt</span></a></li></ol></li><li class="top-box-item top-box-level-2"><a class="top-box-link" href="#%E5%B8%B8%E8%A7%81%E9%97%AE%E9%A2%98"><span class="top-box-text">常见问题</span></a></li><li class="top-box-item top-box-level-2"><a class="top-box-link" href="#%E5%8F%8D%E9%A6%88"><span class="top-box-text">反馈</span></a></li></ol>
+          <ol class="top-box"><li class="top-box-item top-box-level-2"><a class="top-box-link" href="#Glowify-%E6%98%AF%E4%BB%80%E4%B9%88%EF%BC%9F"><span class="top-box-text">Glowify 是什么？</span></a></li><li class="top-box-item top-box-level-2"><a class="top-box-link" href="#%E5%A6%82%E4%BD%95%E5%AE%89%E8%A3%85"><span class="top-box-text">如何安装</span></a><ol class="top-box-child"><li class="top-box-item top-box-level-3"><a class="top-box-link" href="#%E9%80%9A%E8%BF%87-GWS-%E5%AE%89%E8%A3%85"><span class="top-box-text">通过 GWS 安装</span></a></li><li class="top-box-item top-box-level-3"><a class="top-box-link" href="#%E6%89%8B%E5%8A%A8%E5%AE%89%E8%A3%85"><span class="top-box-text">手动安装</span></a></li></ol></li><li class="top-box-item top-box-level-2"><a class="top-box-link" href="#%E5%87%86%E5%A4%87%E5%B7%A5%E4%BD%9C"><span class="top-box-text">准备工作</span></a></li><li class="top-box-item top-box-level-2"><a class="top-box-link" href="#%E5%BC%80%E5%A7%8B%E4%BD%BF%E7%94%A8"><span class="top-box-text">开始使用</span></a></li><li class="top-box-item top-box-level-2"><a class="top-box-link" href="#%E4%BD%BF%E7%94%A8%E6%8A%80%E5%B7%A7"><span class="top-box-text">使用技巧</span></a><ol class="top-box-child"><li class="top-box-item top-box-level-3"><a class="top-box-link" href="#URL%E7%99%BD%E5%90%8D%E5%8D%95"><span class="top-box-text">URL白名单</span></a></li><li class="top-box-item top-box-level-3"><a class="top-box-link" href="#%E4%BE%A7%E9%9D%A2%E6%9D%BF"><span class="top-box-text">侧面板</span></a></li><li class="top-box-item top-box-level-3"><a class="top-box-link" href="#Notion-%E6%95%B0%E6%8D%AE%E5%90%8C%E6%AD%A5"><span class="top-box-text">Notion 数据同步</span></a></li><li class="top-box-item top-box-level-3"><a class="top-box-link" href="#%E5%88%9B%E5%BB%BA-Notion-%E9%9B%86%E6%88%90%EF%BC%9A"><span class="top-box-text">创建 Notion 集成：</span></a></li><li class="top-box-item top-box-level-3"><a class="top-box-link" href="#%E9%85%8D%E7%BD%AE-Glowify"><span class="top-box-text">配置 Glowify</span></a></li><li class="top-box-item top-box-level-3"><a class="top-box-link" href="#%E8%87%AA%E5%AE%9A%E4%B9%89-Prompt"><span class="top-box-text">自定义 Prompt</span></a></li></ol></li><li class="top-box-item top-box-level-2"><a class="top-box-link" href="#%E5%B8%B8%E8%A7%81%E9%97%AE%E9%A2%98"><span class="top-box-text">常见问题</span></a></li><li class="top-box-item top-box-level-2"><a class="top-box-link" href="#%E5%8F%8D%E9%A6%88"><span class="top-box-text">反馈</span></a></li></ol>
         </div>
           
       </div>
