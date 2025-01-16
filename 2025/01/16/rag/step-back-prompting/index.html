@@ -9,8 +9,8 @@
 
 <meta charset="utf-8" >
 
-<title>Step Back Prompting</title>
-<meta name="keywords" content="Step Back Prompting, 击壤而歌">
+<title>RAG 查询优化之 Step Back Prompting</title>
+<meta name="keywords" content="RAG 查询优化之 Step Back Prompting, 击壤而歌">
 <meta name="description" content="
 抽象的目的不是为了模糊，而是为了创造一个新的语义层次，在这个层次上人们可以绝对精确。—— Edsger W. Dijkstra
 
@@ -18,7 +18,7 @@ SBP(Step-Back Prompting) 是一种大模型提示词技术， 它通过对原始
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<meta property="og:title" content="Step Back Prompting">
+<meta property="og:title" content="RAG 查询优化之 Step Back Prompting">
 <meta property="og:description" content="
 抽象的目的不是为了模糊，而是为了创造一个新的语义层次，在这个层次上人们可以绝对精确。—— Edsger W. Dijkstra
 
@@ -27,7 +27,9 @@ SBP(Step-Back Prompting) 是一种大模型提示词技术， 它通过对原始
 <link rel="shortcut icon" href="/favicon.ico">
 <link rel="stylesheet" href="/style/main.css">
 
-  <link rel="stylesheet" href="/style/simple-lightbox.min.css"><meta name="generator" content="Hexo 7.3.0"></head>
+  <!-- hexo injector head_end start -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.12.0/dist/katex.min.css">
+<!-- hexo injector head_end end --><link rel="stylesheet" href="/style/simple-lightbox.min.css"><meta name="generator" content="Hexo 7.3.0"></head>
   <body>
     <div id="app" class="main">
 
@@ -82,7 +84,7 @@ SBP(Step-Back Prompting) 是一种大模型提示词技术， 它通过对原始
   <div class="content-container">
     <div class="post-detail">
       
-      <h2 class="post-title">Step Back Prompting</h2>
+      <h2 class="post-title">RAG 查询优化之 Step Back Prompting</h2>
       <div class="post-info post-detail-info">
         <span><i class="icon icon-calendar-outline"></i> 2025-01-16</span>
         
@@ -105,11 +107,11 @@ SBP(Step-Back Prompting) 是一种大模型提示词技术， 它通过对原始
 <p>SBP(Step-Back Prompting) 是一种大模型提示词技术， 它通过对原始问题进行抽象，推导出高级概念和基本原理， 从而得到更加准确的答案。 SBP 由Google DeepMind团队的 Zheng Huaixiu 等人于 2023 年10月在 <a href="%5Bhttps://arxiv.org/abs/2310.06117%5D(https://arxiv.org/abs/2310.06117)">《Take a Step Back: Evoking Reasoning via Abstraction in Large Language Models》</a>一文中提出， 在 RAG 应用中可用于对Query的改写来提升 RAG生成结果的准确性。 </p>
 <p>SBP 将原始问题提炼为一个“回退问题”（stepback question），并使用“回退答案”（stepback answer）来生成最终答案。它包含两个步骤:</p>
 <ul>
-<li>抽象: SBP不直接回答原始问题， 可以通过LLM生成一个包含高级概念和基本原理的、更抽象和通用的回退问题。 </li>
-<li>推理: 基于回退问题的相关事实或者答案（或RAG中检索到的相关文档）， 推理出原始问题的答案。这一步也称为基于抽象的推理(Abstraction-grounded Reasoning)</li>
+<li><code>抽象</code>: SBP不直接回答原始问题， 可以通过LLM生成一个包含高级概念和基本原理的、更抽象和通用的回退问题。 </li>
+<li><code>推理</code>: 基于回退问题的相关事实或者答案（或RAG中检索到的相关文档）， 推理出原始问题的答案。这一步也称为基于抽象的推理(Abstraction-grounded Reasoning)</li>
 </ul>
 <p>下图展示了 SBP 的工作流程， 并和直接输出的原始答案以及CoT (Chain-of-Thought) 的输出进行了对比。 </p>
-<p><a class="simple-lightbox" href="/assets/step-back-prompting.png"><img   src="/images/loading.svg" data-src="/assets/step-back-prompting.png"  lazyload></a></p>
+<p><a class="simple-lightbox" href="/assets/rag/step-back-prompting.png"><img   src="/images/loading.svg" data-src="/assets/rag/step-back-prompting.png"  lazyload></a></p>
 <p>在包括 STEM, Knowledge QA, Multi-Hop Reasoning 多个类型的任务的对比实验上， Step-Back Prompting的效果均大幅优于CoT。</p>
 <p><a class="simple-lightbox" target="_blank" rel="noopener" href="https://miro.medium.com/v2/resize:fit:2000/format:webp/1*Jdv3FM1d625TJ7yDX4iHnQ.png"><img   src="/images/loading.svg" data-src="https://miro.medium.com/v2/resize:fit:2000/format:webp/1*Jdv3FM1d625TJ7yDX4iHnQ.png"  lazyload></a></p>
 
@@ -124,9 +126,9 @@ SBP(Step-Back Prompting) 是一种大模型提示词技术， 它通过对原始
 
     
       <div class="next-post">
-        <a class="purple-link" href="/2025/01/13/introducing-redtrans/">
+        <a class="purple-link" href="/2025/01/13/introducing-redtrans-chs/">
           <h3 class="post-title">
-            下一篇：Introducing RedTrans - The Missing Translation Tool for REDNote
+            下一篇：RedTrans - 小红书专属翻译插件
           </h3>
         </a>
       </div>
@@ -168,7 +170,7 @@ SBP(Step-Back Prompting) 是一种大模型提示词技术， 它通过对原始
   <div class="social-container">
     
       
-        <a aria-label="跳转至github" href="https://github.com/f-dong" target="_blank">
+        <a aria-label="跳转至github" href="https://github.com/orrrrz" target="_blank">
           <i class="icon icon-github"></i>
         </a>
       
