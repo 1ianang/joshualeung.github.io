@@ -9,16 +9,20 @@
 
 <meta charset="utf-8" >
 
-<title>RAG 查询优化之 Doc2Query</title>
-<meta name="keywords" content="RAG 查询优化之 Doc2Query, 击壤而歌">
-<meta name="description" content="Doc2Query 是由微软的Liang Wang等人于2023年3月在论文《Query2doc: Query Expansion with Large Language Models》 中提出的一种RAG Query改写技术。 
-其思想非">
+<title>RAG Query改写系列4: Step Back Prompting</title>
+<meta name="keywords" content="RAG Query改写系列4: Step Back Prompting, 击壤而歌">
+<meta name="description" content="
+抽象的目的不是为了模糊，而是为了创造一个新的语义层次，在这个层次上人们可以绝对精确。—— Edsger W. Dijkstra
+
+SBP(Step-Back Prompting) 是一种大模型提示词技术， 它通过对原始问题进行抽象，推导出">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<meta property="og:title" content="RAG 查询优化之 Doc2Query">
-<meta property="og:description" content="Doc2Query 是由微软的Liang Wang等人于2023年3月在论文《Query2doc: Query Expansion with Large Language Models》 中提出的一种RAG Query改写技术。 
-其思想非">
+<meta property="og:title" content="RAG Query改写系列4: Step Back Prompting">
+<meta property="og:description" content="
+抽象的目的不是为了模糊，而是为了创造一个新的语义层次，在这个层次上人们可以绝对精确。—— Edsger W. Dijkstra
+
+SBP(Step-Back Prompting) 是一种大模型提示词技术， 它通过对原始问题进行抽象，推导出">
 
 <link rel="shortcut icon" href="/favicon.ico">
 <link rel="stylesheet" href="/style/main.css">
@@ -80,9 +84,9 @@
   <div class="content-container">
     <div class="post-detail">
       
-      <h2 class="post-title">RAG 查询优化之 Doc2Query</h2>
+      <h2 class="post-title">RAG Query改写系列4: Step Back Prompting</h2>
       <div class="post-info post-detail-info">
-        <span><i class="icon icon-calendar-outline"></i> 2025-01-16</span>
+        <span><i class="icon icon-calendar-outline"></i> 2025-01-13</span>
         
           <span>
           <i class="icon icon-pricetags-outline"></i>
@@ -104,13 +108,6 @@
               <a href="/tags/Prompt-Engineering/">
               Prompt Engineering
                 
-                  ，
-                
-              </a>
-            
-              <a href="/tags/Doc2Query/">
-              Doc2Query
-                
               </a>
             
           </span>
@@ -118,24 +115,19 @@
       </div>
       <div class="post-content-wrapper">
         <div class="post-content">
-          <p>Doc2Query 是由微软的Liang Wang等人于2023年3月在论文<a target="_blank" rel="noopener" href="https://arxiv.org/pdf/2303.07678">《Query2doc: Query Expansion with Large Language Models》</a> 中提出的一种RAG Query改写技术。 </p>
-<p>其思想非常简单直接:  约定原始查询Query, Doc2Query 通过 few-shot prompting 的方式， 生成若干个能够回答原始查询的伪文档， 然后将这些伪文档拼接到原始查询中， 作为新的查询Query。 </p>
-<p>伪文档的生成提示词示例如下:</p>
-<p><a class="simple-lightbox" href="/assets/rag/doc2query-1.png"><img   src="/images/loading.svg" data-src="/assets/rag/doc2query-1.png"  lazyload></a></p>
-<p>对于稀疏检索(如BM25), 拼接方式如下:</p>
-<p>$$<br>q^{+} &#x3D; \text{concat}({q} \times n, d’)<br>$$</p>
-<p>由于伪文档的长度显著长于原始Query, 为防止原始Query的语义被淹没， 需要对原始查询进行加权。 </p>
-<p>对于稠密检索(如DPR), 拼接方式如下:</p>
-<p>$$<br>$q^{+} &#x3D; \text{concat}(q, [\text{SEP}], d’)$<br>$$</p>
-<p>即， 新的Query是原始Query和伪文档的拼接。 </p>
-<p><a class="simple-lightbox" href="/assets/rag/doc2query-2.png"><img   src="/images/loading.svg" data-src="/assets/rag/doc2query-2.png"  lazyload></a></p>
-<p>作者分别在领域内检索任务和零样本的跨领域检索任务下的不同数据集上进行了评估， 评估指标包括MRR@10, R@k ( k ∈ {50, 1k})以及 nDCG@10。 主要的实验结论如下:<br>对于领域内检索任务:</p>
+          <blockquote>
+<p>抽象的目的不是为了模糊，而是为了创造一个新的语义层次，在这个层次上人们可以绝对精确。—— Edsger W. Dijkstra</p>
+</blockquote>
+<p>SBP(Step-Back Prompting) 是一种大模型提示词技术， 它通过对原始问题进行抽象，推导出高级概念和基本原理， 从而得到更加准确的答案。 SBP 由Google DeepMind团队的 Zheng Huaixiu 等人于 2023 年10月在 <a href="%5Bhttps://arxiv.org/abs/2310.06117%5D(https://arxiv.org/abs/2310.06117)">《Take a Step Back: Evoking Reasoning via Abstraction in Large Language Models》</a>一文中提出， 在 RAG 应用中可用于对Query的改写来提升 RAG生成结果的准确性。 </p>
+<p>SBP 将原始问题提炼为一个“回退问题”（stepback question），并使用“回退答案”（stepback answer）来生成最终答案。它包含两个步骤:</p>
 <ul>
-<li>在稀疏检索任务中， BM25 + Doc2Query 的检索效果显著优于BM25 及 BM25 + RM3. (注: RM3是一种基于伪相关反馈的检索增强技术)， 仅在部分数据上落后于 docT5query, 而 docT5query 的主要劣势是需要通过特定的数据集进行微调，成本较高。 </li>
-<li>在稠密检索任务中， DPR + Doc2Query 的检索效果显著优于 ANCE 和 HyDE。 但是， 与使用了中间预训练或是基于Reranker 蒸馏的方案， 如 RocketQAv2 和 AR2 相比，  Doc2Query的优势并不明显。</li>
+<li><code>抽象</code>: SBP不直接回答原始问题， 可以通过LLM生成一个包含高级概念和基本原理的、更抽象和通用的回退问题。 </li>
+<li><code>推理</code>: 基于回退问题的相关事实或者答案（或RAG中检索到的相关文档）， 推理出原始问题的答案。这一步也称为基于抽象的推理(Abstraction-grounded Reasoning)</li>
 </ul>
-<p><a class="simple-lightbox" href="/assets/rag/doc2query-3.png"><img   src="/images/loading.svg" data-src="/assets/rag/doc2query-3.png"  lazyload></a><br>对于跨领域的零样本检索任务， Doc2Query 在DBPedia 上取得了显著的提升， 但在 NFCorpus 和 Scifact 数据集上， 其rank性能略有下降。 这可能与训练数据集与目标数据集的分布差异有关。 </p>
-<p>Doc2Query 是一种非常简单有效的RAG Query改写技术， 在思想上与 HyDE 非常相似， Psudo Document 即是 HyDE 中的 Hypothetical Document， 只是在拿到Psudo Document 后怎么得到最终的 Query的方案上略有不同。 Anyway, 在实践上都可以快速尝试， 毕竟几乎没有成本。 </p>
+<p>下图展示了 SBP 的工作流程， 并和直接输出的原始答案以及CoT (Chain-of-Thought) 的输出进行了对比。 </p>
+<p><a class="simple-lightbox" href="/assets/rag/step-back-prompting.png"><img   src="/images/loading.svg" data-src="/assets/rag/step-back-prompting.png"  lazyload></a></p>
+<p>在包括 STEM, Knowledge QA, Multi-Hop Reasoning 多个类型的任务的对比实验上， Step-Back Prompting的效果均大幅优于CoT。</p>
+<p><a class="simple-lightbox" target="_blank" rel="noopener" href="https://miro.medium.com/v2/resize:fit:2000/format:webp/1*Jdv3FM1d625TJ7yDX4iHnQ.png"><img   src="/images/loading.svg" data-src="https://miro.medium.com/v2/resize:fit:2000/format:webp/1*Jdv3FM1d625TJ7yDX4iHnQ.png"  lazyload></a></p>
 
         </div>
           
@@ -148,9 +140,9 @@
 
     
       <div class="next-post">
-        <a class="purple-link" href="/2025/01/16/rag/rewrite-retrieval-read/">
+        <a class="purple-link" href="/2025/01/12/rag/query-rewrite-rewrite-retrieval-read/">
           <h3 class="post-title">
-            下一篇：RAG 查询优化之 Rewrite-Retrieval-Read
+            下一篇：RAG Query改写系列3: Rewrite-Retrieval-Read
           </h3>
         </a>
       </div>

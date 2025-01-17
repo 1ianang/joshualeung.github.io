@@ -9,20 +9,14 @@
 
 <meta charset="utf-8" >
 
-<title>RAG 查询优化之 Step Back Prompting</title>
-<meta name="keywords" content="RAG 查询优化之 Step Back Prompting, 击壤而歌">
-<meta name="description" content="
-抽象的目的不是为了模糊，而是为了创造一个新的语义层次，在这个层次上人们可以绝对精确。—— Edsger W. Dijkstra
-
-SBP(Step-Back Prompting) 是一种大模型提示词技术， 它通过对原始问题进行抽象，推导出">
+<title>RAG Query改写系列3: Rewrite-Retrieval-Read</title>
+<meta name="keywords" content="RAG Query改写系列3: Rewrite-Retrieval-Read, 击壤而歌">
+<meta name="description" content="Rewrite-Retrieval-Read 是由上海交大与微软亚洲研究院于2023年5月在论文(《Query Rewriting for Retrieval-Augmented Large Language Models》)[https:">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<meta property="og:title" content="RAG 查询优化之 Step Back Prompting">
-<meta property="og:description" content="
-抽象的目的不是为了模糊，而是为了创造一个新的语义层次，在这个层次上人们可以绝对精确。—— Edsger W. Dijkstra
-
-SBP(Step-Back Prompting) 是一种大模型提示词技术， 它通过对原始问题进行抽象，推导出">
+<meta property="og:title" content="RAG Query改写系列3: Rewrite-Retrieval-Read">
+<meta property="og:description" content="Rewrite-Retrieval-Read 是由上海交大与微软亚洲研究院于2023年5月在论文(《Query Rewriting for Retrieval-Augmented Large Language Models》)[https:">
 
 <link rel="shortcut icon" href="/favicon.ico">
 <link rel="stylesheet" href="/style/main.css">
@@ -84,9 +78,9 @@ SBP(Step-Back Prompting) 是一种大模型提示词技术， 它通过对原始
   <div class="content-container">
     <div class="post-detail">
       
-      <h2 class="post-title">RAG 查询优化之 Step Back Prompting</h2>
+      <h2 class="post-title">RAG Query改写系列3: Rewrite-Retrieval-Read</h2>
       <div class="post-info post-detail-info">
-        <span><i class="icon icon-calendar-outline"></i> 2025-01-15</span>
+        <span><i class="icon icon-calendar-outline"></i> 2025-01-12</span>
         
           <span>
           <i class="icon icon-pricetags-outline"></i>
@@ -115,19 +109,16 @@ SBP(Step-Back Prompting) 是一种大模型提示词技术， 它通过对原始
       </div>
       <div class="post-content-wrapper">
         <div class="post-content">
-          <blockquote>
-<p>抽象的目的不是为了模糊，而是为了创造一个新的语义层次，在这个层次上人们可以绝对精确。—— Edsger W. Dijkstra</p>
-</blockquote>
-<p>SBP(Step-Back Prompting) 是一种大模型提示词技术， 它通过对原始问题进行抽象，推导出高级概念和基本原理， 从而得到更加准确的答案。 SBP 由Google DeepMind团队的 Zheng Huaixiu 等人于 2023 年10月在 <a href="%5Bhttps://arxiv.org/abs/2310.06117%5D(https://arxiv.org/abs/2310.06117)">《Take a Step Back: Evoking Reasoning via Abstraction in Large Language Models》</a>一文中提出， 在 RAG 应用中可用于对Query的改写来提升 RAG生成结果的准确性。 </p>
-<p>SBP 将原始问题提炼为一个“回退问题”（stepback question），并使用“回退答案”（stepback answer）来生成最终答案。它包含两个步骤:</p>
+          <p>Rewrite-Retrieval-Read 是由上海交大与微软亚洲研究院于2023年5月在论文(《Query Rewriting for Retrieval-Augmented Large Language Models》)[<a target="_blank" rel="noopener" href="https://arxiv.org/abs/2305.14283]%E6%8F%90%E5%87%BA%E7%9A%84%E4%B8%80%E7%A7%8DRAG">https://arxiv.org/abs/2305.14283]提出的一种RAG</a> 查询优化策略。 </p>
+<p>与传统基于 Retrival + Read两步走的RAG架构不同， Rewrite-Retrieval-Read 增加了一个Query 改写环节(Rewrite), 通过LLM 对 Query进行改写， 从而提升检索环节的效果。 </p>
+<p><a class="simple-lightbox" href="/assets/rag/rrr-1.png"><img   src="/images/loading.svg" data-src="/assets/rag/rrr-1.png"  alt="assets&#x2F;rag&#x2F;rrr-1.png" lazyload></a></p>
+<p>这个想法看着过于简单直接， 平平无奇，无法支撑论文的版面。 于是作者又提出了基于T5-large(770M)微调一个Query改写模型， 模型的训练分为两个阶段:</p>
 <ul>
-<li><code>抽象</code>: SBP不直接回答原始问题， 可以通过LLM生成一个包含高级概念和基本原理的、更抽象和通用的回退问题。 </li>
-<li><code>推理</code>: 基于回退问题的相关事实或者答案（或RAG中检索到的相关文档）， 推理出原始问题的答案。这一步也称为基于抽象的推理(Abstraction-grounded Reasoning)</li>
+<li>基于过滤后的LLM合成数据进行热启动训练。 训练目标为:<br>$$<br>\mathcal{L}<em>{warm}&#x3D;-\sum</em>{t}\log p_{\theta}(\hat{\tilde{x}}<em>{t}|\ \tilde{x}</em>{&lt;t},x)<br>$$</li>
+<li>通过基于PPO的强化学习算法对Query改写模型进行对齐。 奖赏函数为:<br>$$<br>R(s_{t},a_{t}) &#x3D; R_{lm}(\hat{\tilde{x}},y)-\beta\text{KL}(\pi_{\theta}||\pi_{0})<br>$$<br>最终的损失函数由策略损失和价值损失的加权和构成:</li>
 </ul>
-<p>下图展示了 SBP 的工作流程， 并和直接输出的原始答案以及CoT (Chain-of-Thought) 的输出进行了对比。 </p>
-<p><a class="simple-lightbox" href="/assets/rag/step-back-prompting.png"><img   src="/images/loading.svg" data-src="/assets/rag/step-back-prompting.png"  lazyload></a></p>
-<p>在包括 STEM, Knowledge QA, Multi-Hop Reasoning 多个类型的任务的对比实验上， Step-Back Prompting的效果均大幅优于CoT。</p>
-<p><a class="simple-lightbox" target="_blank" rel="noopener" href="https://miro.medium.com/v2/resize:fit:2000/format:webp/1*Jdv3FM1d625TJ7yDX4iHnQ.png"><img   src="/images/loading.svg" data-src="https://miro.medium.com/v2/resize:fit:2000/format:webp/1*Jdv3FM1d625TJ7yDX4iHnQ.png"  lazyload></a></p>
+<p>$$<br>\begin{align*}<br>\mathcal{L}{\theta}&amp;&#x3D;-\frac{1}{|\mathcal{S}|T}\sum{\tau\in\mathcal{S}}\sum_{t &#x3D; 0}^{T}\min(k_{t,\theta}A^{\theta’}, \text{clip }A^{\theta’})<br>\mathcal{L}{\phi}&amp;&#x3D;\frac{1}{|\mathcal{S}|T}\sum{\tau\in\mathcal{S}}\sum_{t &#x3D; 0}^{T}(V_{\phi}(s_{t})-R_{t})^{2},<br>\mathcal{L}{ppo}&amp;&#x3D;\mathcal{L}{\theta}+\lambda_{v}\mathcal{L}_{\phi}.<br>\end{align*}<br>$$</p>
+<p>文章给人的整体感受是想法平平无奇， 为了撑版本又整了点不实用的花活。 </p>
 
         </div>
           
@@ -140,9 +131,9 @@ SBP(Step-Back Prompting) 是一种大模型提示词技术， 它通过对原始
 
     
       <div class="next-post">
-        <a class="purple-link" href="/2025/01/14/rag/hyde/">
+        <a class="purple-link" href="/2025/01/11/rag/query-rewrite-doc2query/">
           <h3 class="post-title">
-            下一篇：RAG 查询优化之 HyDE
+            下一篇：RAG Query改写系列2: Doc2Query
           </h3>
         </a>
       </div>

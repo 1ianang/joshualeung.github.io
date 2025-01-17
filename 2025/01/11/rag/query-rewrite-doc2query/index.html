@@ -9,14 +9,16 @@
 
 <meta charset="utf-8" >
 
-<title>RAG 查询优化之 Rewrite-Retrieval-Read</title>
-<meta name="keywords" content="RAG 查询优化之 Rewrite-Retrieval-Read, 击壤而歌">
-<meta name="description" content="Rewrite-Retrieval-Read 是由上海交大与微软亚洲研究院于2023年5月在论文(《Query Rewriting for Retrieval-Augmented Large Language Models》)[https:">
+<title>RAG Query改写系列2: Doc2Query</title>
+<meta name="keywords" content="RAG Query改写系列2: Doc2Query, 击壤而歌">
+<meta name="description" content="Doc2Query 是由微软的Liang Wang等人于2023年3月在论文《Query2doc: Query Expansion with Large Language Models》 中提出的一种RAG Query改写技术。 
+其思想非">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<meta property="og:title" content="RAG 查询优化之 Rewrite-Retrieval-Read">
-<meta property="og:description" content="Rewrite-Retrieval-Read 是由上海交大与微软亚洲研究院于2023年5月在论文(《Query Rewriting for Retrieval-Augmented Large Language Models》)[https:">
+<meta property="og:title" content="RAG Query改写系列2: Doc2Query">
+<meta property="og:description" content="Doc2Query 是由微软的Liang Wang等人于2023年3月在论文《Query2doc: Query Expansion with Large Language Models》 中提出的一种RAG Query改写技术。 
+其思想非">
 
 <link rel="shortcut icon" href="/favicon.ico">
 <link rel="stylesheet" href="/style/main.css">
@@ -78,9 +80,9 @@
   <div class="content-container">
     <div class="post-detail">
       
-      <h2 class="post-title">RAG 查询优化之 Rewrite-Retrieval-Read</h2>
+      <h2 class="post-title">RAG Query改写系列2: Doc2Query</h2>
       <div class="post-info post-detail-info">
-        <span><i class="icon icon-calendar-outline"></i> 2025-01-16</span>
+        <span><i class="icon icon-calendar-outline"></i> 2025-01-11</span>
         
           <span>
           <i class="icon icon-pricetags-outline"></i>
@@ -102,6 +104,13 @@
               <a href="/tags/Prompt-Engineering/">
               Prompt Engineering
                 
+                  ，
+                
+              </a>
+            
+              <a href="/tags/Doc2Query/">
+              Doc2Query
+                
               </a>
             
           </span>
@@ -109,16 +118,24 @@
       </div>
       <div class="post-content-wrapper">
         <div class="post-content">
-          <p>Rewrite-Retrieval-Read 是由上海交大与微软亚洲研究院于2023年5月在论文(《Query Rewriting for Retrieval-Augmented Large Language Models》)[<a target="_blank" rel="noopener" href="https://arxiv.org/abs/2305.14283]%E6%8F%90%E5%87%BA%E7%9A%84%E4%B8%80%E7%A7%8DRAG">https://arxiv.org/abs/2305.14283]提出的一种RAG</a> 查询优化策略。 </p>
-<p>与传统基于 Retrival + Read两步走的RAG架构不同， Rewrite-Retrieval-Read 增加了一个Query 改写环节(Rewrite), 通过LLM 对 Query进行改写， 从而提升检索环节的效果。 </p>
-<p><a class="simple-lightbox" href="/assets/rag/rrr-1.png"><img   src="/images/loading.svg" data-src="/assets/rag/rrr-1.png"  alt="assets&#x2F;rag&#x2F;rrr-1.png" lazyload></a></p>
-<p>这个想法看着过于简单直接， 平平无奇，无法支撑论文的版面。 于是作者又提出了基于T5-large(770M)微调一个Query改写模型， 模型的训练分为两个阶段:</p>
+          <p>Doc2Query 是由微软的Liang Wang等人于2023年3月在论文<a target="_blank" rel="noopener" href="https://arxiv.org/pdf/2303.07678">《Query2doc: Query Expansion with Large Language Models》</a> 中提出的一种RAG Query改写技术。 </p>
+<p>其思想非常简单直接:  约定原始查询Query, Doc2Query 通过 few-shot prompting 的方式， 生成若干个能够回答原始查询的伪文档， 然后将这些伪文档拼接到原始查询中， 作为新的查询Query。 </p>
+<p>伪文档的生成提示词示例如下:</p>
+<p><a class="simple-lightbox" href="/assets/rag/doc2query-1.png"><img   src="/images/loading.svg" data-src="/assets/rag/doc2query-1.png"  lazyload></a></p>
+<p>对于稀疏检索(如BM25), 拼接方式如下:</p>
+<p>$$<br>q^{+} &#x3D; \text{concat}({q} \times n, d’)<br>$$</p>
+<p>由于伪文档的长度显著长于原始Query, 为防止原始Query的语义被淹没， 需要对原始查询进行加权。 </p>
+<p>对于稠密检索(如DPR), 拼接方式如下:</p>
+<p>$$<br>$q^{+} &#x3D; \text{concat}(q, [\text{SEP}], d’)$<br>$$</p>
+<p>即， 新的Query是原始Query和伪文档的拼接。 </p>
+<p><a class="simple-lightbox" href="/assets/rag/doc2query-2.png"><img   src="/images/loading.svg" data-src="/assets/rag/doc2query-2.png"  lazyload></a></p>
+<p>作者分别在领域内检索任务和零样本的跨领域检索任务下的不同数据集上进行了评估， 评估指标包括MRR@10, R@k ( k ∈ {50, 1k})以及 nDCG@10。 主要的实验结论如下:<br>对于领域内检索任务:</p>
 <ul>
-<li>基于过滤后的LLM合成数据进行热启动训练。 训练目标为:<br>$$<br>\mathcal{L}<em>{warm}&#x3D;-\sum</em>{t}\log p_{\theta}(\hat{\tilde{x}}<em>{t}|\ \tilde{x}</em>{&lt;t},x)<br>$$</li>
-<li>通过基于PPO的强化学习算法对Query改写模型进行对齐。 奖赏函数为:<br>$$<br>R(s_{t},a_{t}) &#x3D; R_{lm}(\hat{\tilde{x}},y)-\beta\text{KL}(\pi_{\theta}||\pi_{0})<br>$$<br>最终的损失函数由策略损失和价值损失的加权和构成:</li>
+<li>在稀疏检索任务中， BM25 + Doc2Query 的检索效果显著优于BM25 及 BM25 + RM3. (注: RM3是一种基于伪相关反馈的检索增强技术)， 仅在部分数据上落后于 docT5query, 而 docT5query 的主要劣势是需要通过特定的数据集进行微调，成本较高。 </li>
+<li>在稠密检索任务中， DPR + Doc2Query 的检索效果显著优于 ANCE 和 HyDE。 但是， 与使用了中间预训练或是基于Reranker 蒸馏的方案， 如 RocketQAv2 和 AR2 相比，  Doc2Query的优势并不明显。</li>
 </ul>
-<p>$$<br>\begin{align*}<br>\mathcal{L}{\theta}&amp;&#x3D;-\frac{1}{|\mathcal{S}|T}\sum{\tau\in\mathcal{S}}\sum_{t &#x3D; 0}^{T}\min(k_{t,\theta}A^{\theta’}, \text{clip }A^{\theta’})<br>\mathcal{L}{\phi}&amp;&#x3D;\frac{1}{|\mathcal{S}|T}\sum{\tau\in\mathcal{S}}\sum_{t &#x3D; 0}^{T}(V_{\phi}(s_{t})-R_{t})^{2},<br>\mathcal{L}{ppo}&amp;&#x3D;\mathcal{L}{\theta}+\lambda_{v}\mathcal{L}_{\phi}.<br>\end{align*}<br>$$</p>
-<p>文章给人的整体感受是想法平平无奇， 为了撑版本又整了点不实用的花活。 </p>
+<p><a class="simple-lightbox" href="/assets/rag/doc2query-3.png"><img   src="/images/loading.svg" data-src="/assets/rag/doc2query-3.png"  lazyload></a><br>对于跨领域的零样本检索任务， Doc2Query 在DBPedia 上取得了显著的提升， 但在 NFCorpus 和 Scifact 数据集上， 其rank性能略有下降。 这可能与训练数据集与目标数据集的分布差异有关。 </p>
+<p>Doc2Query 是一种非常简单有效的RAG Query改写技术， 在思想上与 HyDE 非常相似， Psudo Document 即是 HyDE 中的 Hypothetical Document， 只是在拿到Psudo Document 后怎么得到最终的 Query的方案上略有不同。 Anyway, 在实践上都可以快速尝试， 毕竟几乎没有成本。 </p>
 
         </div>
           
@@ -131,9 +148,9 @@
 
     
       <div class="next-post">
-        <a class="purple-link" href="/2025/01/15/rag/step-back-prompting/">
+        <a class="purple-link" href="/2025/01/10/rag/query-rewrite-hyde/">
           <h3 class="post-title">
-            下一篇：RAG 查询优化之 Step Back Prompting
+            下一篇：RAG Query改写系列1: HyDE
           </h3>
         </a>
       </div>
