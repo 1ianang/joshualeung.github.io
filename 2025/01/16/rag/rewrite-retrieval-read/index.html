@@ -9,14 +9,14 @@
 
 <meta charset="utf-8" >
 
-<title>RAG 查询优化之 HyDE</title>
-<meta name="keywords" content="RAG 查询优化之 HyDE, 击壤而歌">
-<meta name="description" content="HyDE 是由CMU的 Luyu Gao (主页: https://luyug.github.io/ ) 等人于2022年12月在论文《Precise Zero-Shot Dense Retrieval without Relevance ">
+<title>RAG 查询优化之 Rewrite-Retrieval-Read</title>
+<meta name="keywords" content="RAG 查询优化之 Rewrite-Retrieval-Read, 击壤而歌">
+<meta name="description" content="Rewrite-Retrieval-Read 是由上海交大与微软亚洲研究院于2023年5月在论文(《Query Rewriting for Retrieval-Augmented Large Language Models》)[https:">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<meta property="og:title" content="RAG 查询优化之 HyDE">
-<meta property="og:description" content="HyDE 是由CMU的 Luyu Gao (主页: https://luyug.github.io/ ) 等人于2022年12月在论文《Precise Zero-Shot Dense Retrieval without Relevance ">
+<meta property="og:title" content="RAG 查询优化之 Rewrite-Retrieval-Read">
+<meta property="og:description" content="Rewrite-Retrieval-Read 是由上海交大与微软亚洲研究院于2023年5月在论文(《Query Rewriting for Retrieval-Augmented Large Language Models》)[https:">
 
 <link rel="shortcut icon" href="/favicon.ico">
 <link rel="stylesheet" href="/style/main.css">
@@ -78,9 +78,9 @@
   <div class="content-container">
     <div class="post-detail">
       
-      <h2 class="post-title">RAG 查询优化之 HyDE</h2>
+      <h2 class="post-title">RAG 查询优化之 Rewrite-Retrieval-Read</h2>
       <div class="post-info post-detail-info">
-        <span><i class="icon icon-calendar-outline"></i> 2025-01-15</span>
+        <span><i class="icon icon-calendar-outline"></i> 2025-01-16</span>
         
           <span>
           <i class="icon icon-pricetags-outline"></i>
@@ -102,13 +102,6 @@
               <a href="/tags/Prompt-Engineering/">
               Prompt Engineering
                 
-                  ，
-                
-              </a>
-            
-              <a href="/tags/HyDE/">
-              HyDE
-                
               </a>
             
           </span>
@@ -116,24 +109,21 @@
       </div>
       <div class="post-content-wrapper">
         <div class="post-content">
-          <p>HyDE 是由CMU的 Luyu Gao (主页: <a target="_blank" rel="noopener" href="https://luyug.github.io/">https://luyug.github.io/</a> ) 等人于2022年12月在论文<a target="_blank" rel="noopener" href="https://arxiv.org/pdf/2212.10496">《Precise Zero-Shot Dense Retrieval without Relevance Labels》</a>中提出的一种RAG 查询优化算法。 </p>
-<h2 id="原理"><a href="#原理" class="headerlink" title="原理"></a>原理</h2><p>HyDE 是一种查询改写技术。 在标准的 RAG 实现中， 向量检索 (Deep Retrieval) 所使用的Query是原始查询字符串的 Embedding向量。 在实际应用场景中， 原始查询与真实答案Embedding的相关性可能没有被向量语义空间很好地捕捉， 比如在 QA (问答) 场景中使用了基于语义相似性训练的向量模型。 这时， 直接原始问题进行相似性查询得到的更可能是与原问题在语义上相似的文档片段， 而并不能回答原始问题。 另一方面， 用户的查询可能包含较大的噪声， 直接进行 Embedding 会导致检索到较多不相关的结果 。 </p>
-<p>HyDE的思想非常简单直接: 对于给定的用户查询 Query, HyDE 先通过LLM生成假设的回答，这些假设性的回答称为 Hypothetical Document (假设性文档), 由于缺少领域性、时效性的知识以及模型幻觉问题的存在， 这些假设性答案通常不正确的， 但与原问题相比， 它们在语义上与真实的相关文档更加接近。下一步则是将这些假设性文档进行Embedding向量化，再通过近似近邻检索(ANN)找到最相关的K个向量。 如下图示:</p>
-<p><a class="simple-lightbox" href="/assets/rag/hyde-1.webp"><img   src="/images/loading.svg" data-src="/assets/rag/hyde-1.webp"  lazyload></a></p>
-<p>如果大家做过推荐算法， 很快就会发现 HyDE 不过是 i2i 算法在 RAG 场景的简单推广。 在推荐算法中， 为了召回用户可能感兴趣的商品， 我们通常并不使用用户的 Embedding（难以训练而且成本较高）, 而是拿到用户过去有过正反馈行为的商品， 再通过商品的 Embedding 来检索其相关的商品作为推荐给用户的候选商品。 </p>
-<h2 id="实现"><a href="#实现" class="headerlink" title="实现"></a>实现</h2><p>与标准RAG相比， HyDE的核心操作是生成假设性文档， 并得到改写后的查询向量。</p>
-<p>生成假设性文档可以直接调用LLM实现， Prompt可以根据场景自定义， 比如:</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">Please write a passage to answer the question</span><br><span class="line">Question: &#123;question&#125;</span><br><span class="line">Passage:</span><br></pre></td></tr></table></figure>
-
-<p>假设通过LLM生成了$N$ ($N &gt;&#x3D; 1$)个假设性文档, 有两种方法得到最终的查询向量:</p>
-<p>一是直接对这N个查询文档的向量进行平均, 即:<br>$$<br>    v&#x3D;\frac{1}{k}\left[\sum_{i &#x3D; 1}^{k}f(d_{i})\right]<br>$$<br>另一种方法是将原始的查询向量也作为一个假设性文档， 即:</p>
-<p>$$<br>    v&#x3D;\frac{1}{k + 1}\left[\sum_{i &#x3D; 1}^{k}f(d_{i})+f(q)\right]<br>$$</p>
-<p>在论文中， 作者宣称， 与当时的SOTA无监督向量检索算法 Contriver 相比， HyDE能够大幅提升 RAG 检索性能， 在 Web 搜索、QA、事实核查等任务中达到了有监督微调算法同等的性能。 </p>
+          <p>Rewrite-Retrieval-Read 是由上海交大与微软亚洲研究院于2023年5月在论文(《Query Rewriting for Retrieval-Augmented Large Language Models》)[<a target="_blank" rel="noopener" href="https://arxiv.org/abs/2305.14283]%E6%8F%90%E5%87%BA%E7%9A%84%E4%B8%80%E7%A7%8DRAG">https://arxiv.org/abs/2305.14283]提出的一种RAG</a> 查询优化策略。 </p>
+<p>与传统基于 Retrival + Read两步走的RAG架构不同， Rewrite-Retrieval-Read 增加了一个Query 改写环节(Rewrite), 通过LLM 对 Query进行改写， 从而提升检索环节的效果。 </p>
+<p><a class="simple-lightbox" href="/assets/rag/rrr-1.png"><img   src="/images/loading.svg" data-src="/assets/rag/rrr-1.png"  alt="assets&#x2F;rag&#x2F;rrr-1.png" lazyload></a></p>
+<p>这个想法看着过于简单直接， 平平无奇，无法支撑论文的版面。 于是作者又提出了基于T5-large(770M)微调一个Query改写模型， 模型的训练分为两个阶段:</p>
+<ul>
+<li>基于过滤后的LLM合成数据进行热启动训练。 训练目标为:<br>$$<br>\mathcal{L}<em>{warm}&#x3D;-\sum</em>{t}\log p_{\theta}(\hat{\tilde{x}}<em>{t}|\ \tilde{x}</em>{&lt;t},x)<br>$$</li>
+<li>通过基于PPO的强化学习算法对Query改写模型进行对齐。 奖赏函数为:<br>$$<br>R(s_{t},a_{t}) &#x3D; R_{lm}(\hat{\tilde{x}},y)-\beta\text{KL}(\pi_{\theta}||\pi_{0})<br>$$<br>最终的损失函数由策略损失和价值损失的加权和构成:</li>
+</ul>
+<p>$$<br>\begin{align*}<br>\mathcal{L}{\theta}&amp;&#x3D;-\frac{1}{|\mathcal{S}|T}\sum{\tau\in\mathcal{S}}\sum_{t &#x3D; 0}^{T}\min(k_{t,\theta}A^{\theta’}, \text{clip }A^{\theta’})<br>\mathcal{L}{\phi}&amp;&#x3D;\frac{1}{|\mathcal{S}|T}\sum{\tau\in\mathcal{S}}\sum_{t &#x3D; 0}^{T}(V_{\phi}(s_{t})-R_{t})^{2},<br>\mathcal{L}{ppo}&amp;&#x3D;\mathcal{L}{\theta}+\lambda_{v}\mathcal{L}_{\phi}.<br>\end{align*}<br>$$</p>
+<p>文章给人的整体感受是想法平平无奇， 为了撑版本又整了点不实用的花活。 </p>
 
         </div>
           
         <div class="top-div">
-          <ol class="top-box"><li class="top-box-item top-box-level-2"><a class="top-box-link" href="#%E5%8E%9F%E7%90%86"><span class="top-box-text">原理</span></a></li><li class="top-box-item top-box-level-2"><a class="top-box-link" href="#%E5%AE%9E%E7%8E%B0"><span class="top-box-text">实现</span></a></li></ol>
+          
         </div>
           
       </div>
