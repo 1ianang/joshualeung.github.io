@@ -1,0 +1,418 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>小红书表情包含义图解</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f6f6f6;
+            line-height: 1.6;
+        }
+
+        .table-container {
+            background: white;
+            border-radius: 16px;
+            padding: 24px;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.08);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0 12px;
+        }
+
+        td {
+            padding: 16px;
+            border: none;
+            background: #fff;
+            vertical-align: middle;
+            font-size: 16px;
+            line-height: 1.4;
+        }
+
+        tr {
+            transition: all 0.2s ease;
+        }
+
+        tr:hover {
+            background: #f8f8f8;
+            transform: translateY(-2px);
+        }
+
+        img {
+            width: 64px;
+            height: 64px;
+            border-radius: 8px;
+        }
+
+        .meaning {
+            font-size: 18px;
+            color: #333;
+            font-weight: 500;
+        }
+
+        .pagination {
+            margin-top: 32px;
+            display: flex;
+            justify-content: center;
+            gap: 12px;
+        }
+
+        button {
+            padding: 12px 24px;
+            border: none;
+            background-color: #fe2c55;
+            color: white;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 500;
+            transition: all 0.2s ease;
+        }
+
+        button:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(254, 44, 85, 0.2);
+        }
+
+        button:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
+        }
+
+        @media (max-width: 480px) {
+            body {
+                padding: 12px;
+            }
+            
+            td {
+                padding: 12px;
+            }
+
+            img {
+                width: 56px;
+                height: 56px;
+            }
+
+            .meaning {
+                font-size: 16px;
+            }
+
+            button {
+                padding: 10px 16px;
+                font-size: 14px;
+            }
+        }
+
+        h1 {
+            text-align: center;
+            color: #fe2c55;
+            font-size: 32px;
+            margin: 0 0 32px 0;
+            padding-bottom: 20px;
+            border-bottom: 2px solid #f0f0f0;
+            font-weight: 700;
+        }
+    </style>
+</head>
+<body>
+    <div class="table-container">
+        <h1>REDNote Stickers Guide</h1>
+        <table id="stickersTable">
+            <tbody></tbody>
+        </table>
+    </div>
+    
+    <div class="pagination">
+        <button id="firstPage">首页</button>
+        <button id="prevPage">上一页</button>
+        <button id="nextPage">下一页</button>
+        <button id="lastPage">末页</button>
+    </div>
+
+    <script>
+        const itemsPerPage = 10;
+        let currentPage = 0;
+        let stickers = [
+  {
+    "src": "https://picasso-static.xiaohongshu.com/fe-platform/9366d16631e3e208689cbc95eefb7cfb0901001e.png",
+    "alt": "[微笑R]"
+  },
+  {
+    "src": "https://picasso-static.xiaohongshu.com/fe-platform/219fe9d7e40b14dd7a6712203143bb1f9972bc5c.png",
+    "alt": "[害羞R]"
+  },
+  {
+    "src": "https://picasso-static.xiaohongshu.com/fe-platform/b862c8f94da375f55805a97c152efeeb5099c149.png",
+    "alt": "[失望R]"
+  },
+  {
+    "src": "https://picasso-static.xiaohongshu.com/fe-platform/87e23e577662f3268362518f7f4e90e30b4ea284.png",
+    "alt": "[汗颜R]"
+  },
+  {
+    "src": "https://picasso-static.xiaohongshu.com/fe-platform/e0771182c12362d41f70356f714d84dccc4d07bc.png",
+    "alt": "[哇R]"
+  },
+  {
+    "src": "https://picasso-static.xiaohongshu.com/fe-platform/364ad5d3e0d5c3b1aa101c9243f488be97d9e8d7.png",
+    "alt": "[喝奶茶R]"
+  },
+  {
+    "src": "https://picasso-static.xiaohongshu.com/fe-platform/d4fe00be555964ddf8301e256cd906b9032679a5.png",
+    "alt": "[自拍R]"
+  },
+  {
+    "src": "https://picasso-static.xiaohongshu.com/fe-platform/d1a34cf8aeac526d36890d3e8f727192a6808ecf.png",
+    "alt": "[偷笑R]"
+  },
+  {
+    "src": "https://picasso-static.xiaohongshu.com/fe-platform/81cedd016ad9d8bef38b2cd0c1e725454df53598.png",
+    "alt": "[飞吻R]"
+  },
+  {
+    "src": "https://picasso-static.xiaohongshu.com/fe-platform/a61db6b1917b6c5c1e8f30bbeea9118a7bdbbe74.png",
+    "alt": "[石化R]"
+  },
+  {
+    "src": "https://picasso-static.xiaohongshu.com/fe-platform/ca75b2fc85b0a3e171fe5df1cbf90efdcd3ba571.png",
+    "alt": "[笑哭R]"
+  },
+  {
+    "src": "https://picasso-static.xiaohongshu.com/fe-platform/1b81c5ec3f7006f6b8baf7c006773f5f9d1ab6d7.png",
+    "alt": "[赞R]"
+  },
+  {
+    "src": "https://picasso-static.xiaohongshu.com/fe-platform/a633dcf8d48c500ae11532d0583c529b89286c66.webp",
+    "alt": "[蹲后续H]"
+  },
+  {
+    "src": "https://picasso-static.xiaohongshu.com/fe-platform/0a9cd643452c7b717b9735a23c550295baa69f02.png",
+    "alt": "[暗中观察R]"
+  },
+  {
+    "src": "https://picasso-static.xiaohongshu.com/fe-platform/c402c10ac31e2e024393cfa7ca61d014579d9191.png",
+    "alt": "[买爆R]"
+  },
+  {
+    "src": "https://picasso-static.xiaohongshu.com/fe-platform/aed28089f6578522cd490f636955efe6dd27da38.png",
+    "alt": "[大笑R]"
+  },
+  {
+    "src": "https://picasso-static.xiaohongshu.com/fe-platform/913a9e2c42916a338b9fa20cf780ae435f51acac.png",
+    "alt": "[色色R]"
+  },
+  {
+    "src": "https://picasso-static.xiaohongshu.com/fe-platform/91515ae9718d8cce4f8de909683011b538d35327.png",
+    "alt": "[生气R]"
+  },
+  {
+    "src": "https://picasso-static.xiaohongshu.com/fe-platform/14b005f7afd5f7c88620478b610bf1de90c4ceab.png",
+    "alt": "[哭惹R]"
+  },
+  {
+    "src": "https://picasso-static.xiaohongshu.com/fe-platform/c255f0ae809f8045561a80737b6aec25139f7607.png",
+    "alt": "[萌萌哒R]"
+  },
+  {
+    "src": "https://picasso-static.xiaohongshu.com/fe-platform/6062be312a922da7998f99fb773e06cea0a640df.png",
+    "alt": "[斜眼R]"
+  },
+  {
+    "src": "https://picasso-static.xiaohongshu.com/fe-platform/36338a7a39e27341b34e845e28561378e9ad1ede.png",
+    "alt": "[可怜R]"
+  },
+  {
+    "src": "https://picasso-static.xiaohongshu.com/fe-platform/0dbbe487e5157d9fb720df7e59fe45a7927af647.png",
+    "alt": "[鄙视R]"
+  },
+  {
+    "src": "https://picasso-static.xiaohongshu.com/fe-platform/fd82d69014a4a50397e20fc6b23ae8dba1c74998.png",
+    "alt": "[皱眉R]"
+  },
+  {
+    "src": "https://picasso-static.xiaohongshu.com/fe-platform/13619bff18deffe1d2dcc4be0a6ba7ee0394926b.png",
+    "alt": "[抓狂R]"
+  },
+  {
+    "src": "https://picasso-static.xiaohongshu.com/fe-platform/83278234fdeb5c36682334f6eb756d243ee62201.png",
+    "alt": "[捂脸R]"
+  },
+  {
+    "src": "https://picasso-static.xiaohongshu.com/fe-platform/7a6287c7f65fabdc15fa8f06b2696cccc21e86f2.png",
+    "alt": "[派对R]"
+  },
+  {
+    "src": "https://picasso-static.xiaohongshu.com/fe-platform/238271771c806047fc928b6ba49a6d8e7a741e5e.png",
+    "alt": "[吧唧R]"
+  },
+  {
+    "src": "https://picasso-static.xiaohongshu.com/fe-platform/114d21cd3f1b4a1591cc997ddd5976bb0cec8f4c.png",
+    "alt": "[惊恐R]"
+  },
+  {
+    "src": "https://picasso-static.xiaohongshu.com/fe-platform/5fd4922d00a004260912247dad6ca7149d8a1f75.png",
+    "alt": "[抠鼻R]"
+  },
+  {
+    "src": "https://picasso-static.xiaohongshu.com/fe-platform/c34602650951342f09ca6e00d6f4c4ac57208a07.png",
+    "alt": "[再见R]"
+  },
+  {
+    "src": "https://picasso-static.xiaohongshu.com/fe-platform/5ce63c6024defb2f6334aa153fd0fd238a683779.png",
+    "alt": "[叹气R]"
+  },
+  {
+    "src": "https://picasso-static.xiaohongshu.com/fe-platform/d98472a962e744dd238f2b4f5dba2665dcb8360b.png",
+    "alt": "[睡觉R]"
+  },
+  {
+    "src": "https://picasso-static.xiaohongshu.com/fe-platform/b02bf85f97acbd6be1749148e163b36920655f92.png",
+    "alt": "[得意R]"
+  },
+  {
+    "src": "https://picasso-static.xiaohongshu.com/fe-platform/a38d15b09910f65756d521f1f46031c44694214a.png",
+    "alt": "[吃瓜R]"
+  },
+  {
+    "src": "https://picasso-static.xiaohongshu.com/fe-platform/6eb56b590b5c70e4559cf5bd93056a6e74ffc474.png",
+    "alt": "[扶墙R]"
+  },
+  {
+    "src": "https://picasso-static.xiaohongshu.com/fe-platform/e4835a534cddad71286ad4e8f0514fded208360d.png",
+    "alt": "[黑薯问号R]"
+  },
+  {
+    "src": "https://picasso-static.xiaohongshu.com/fe-platform/08b0e51ac813a53bebeb0b9391df5094d4777951.png",
+    "alt": "[黄金薯R]"
+  },
+  {
+    "src": "https://picasso-static.xiaohongshu.com/fe-platform/e4533cbaa5829c6ffd92992414290987e39ba6be.png",
+    "alt": "[吐舌头H]"
+  },
+  {
+    "src": "https://picasso-static.xiaohongshu.com/fe-platform/d968308cfaf571fbc75cbcd7ec0cefe9150a390a.png",
+    "alt": "[扯脸H]"
+  },
+  {
+    "src": "https://picasso-static.xiaohongshu.com/fe-platform/b7c0498189d449e8f22946be494d6bad48eda5ab.png",
+    "alt": "[doge]"
+  }
+];
+
+        // Translation mapping
+        const translations = {
+"微笑": "Smile (can imply sarcasm or insincerity)",
+"害羞": "I'm kinda shy (may indicate embarrassment or coyness)",
+"失望": "Disappointed",
+"汗颜": "Sweating (Are you serious?)",
+"哇": "Wow",
+"喝奶茶": "Drinking Bubble Tea",
+"自拍": "Selfie",
+"偷笑": "Giggle (can suggest a secret or inside joke)",
+"飞吻": "Blow Kiss (Love it)",
+"石化": "Petrified (indicates shock or disbelief)",
+"笑哭": "Laugh Cry (amused but also overwhelmed)",
+"赞": "Pretty good (can imply mild approval)",
+"蹲后续": "Waiting for Updates",
+"暗中观察": "Observing (can imply suspicion or interest)",
+"买爆": "Shopping Spree",
+"大笑": "LOL (expresses genuine amusement)",
+"色色": "Flirty (suggests playful attraction)",
+"生气": "Angry",
+"哭惹": "Crying (indicates distress or sadness)",
+"萌萌哒": "Cute",
+"斜眼": "Side Eye (implies skepticism or disapproval)",
+"可怜": "Pitiful",
+"鄙视": "Disdain (expresses contempt)",
+"皱眉": "Frown (indicates confusion or disapproval)",
+"抓狂": "Frustrated",
+"捂脸": "Face Palm (indicates embarrassment or disbelief)",
+"派对": "Party",
+"吧唧": "Kiss",
+"惊恐": "Terrified",
+"抠鼻": "Picking Nose (can imply boredom or rudeness)",
+"再见": "Good Bye and I don't want to see ya again",
+"叹气": "Sigh (indicates resignation or disappointment)",
+"睡觉": "Sleeping",
+"得意": "Proud (can imply arrogance)",
+"吃瓜": "Eating Melon/Gossip (indicates observing drama)",
+"扶墙": "Leaning on Wall (suggests exhaustion or support needed)",
+"黑薯问号": "Black Sweet Potato Question (implies confusion or curiosity)",
+"黄金薯": "Golden Sweet Potato (may indicate something valuable or precious)",
+"吐舌头": "Tongue Out (playful teasing or cheekiness)",
+"扯脸": "Pulling Face (suggests making a silly expression)",
+"doge": "'Doge'. Crack a joke to make your words more humorous"
+};
+
+        function displayStickers() {
+            const tbody = document.querySelector('#stickersTable tbody');
+            tbody.innerHTML = '';
+            
+            const start = currentPage * itemsPerPage;
+            const end = Math.min(start + itemsPerPage, stickers.length);
+            
+            for (let i = start; i < end; i++) {
+                const row = document.createElement('tr');
+                // remove the trailing R or H
+                const alt = stickers[i].alt;
+                // 
+
+                const chineseMeaning = alt.slice(1, -1).replace(/[R|H]$/, ''); // Remove the square brackets
+                const englishMeaning = translations[chineseMeaning] || chineseMeaning; // Fallback to Chinese if no translation
+                row.innerHTML = `
+                    <td style="width: 80px;"><img src="${stickers[i].src}" alt="${alt}"></td>
+                    <td class="meaning">${englishMeaning}</td>
+                `;
+                tbody.appendChild(row);
+            }
+
+            updatePaginationButtons();
+        }
+
+        function updatePaginationButtons() {
+            const totalPages = Math.ceil(stickers.length / itemsPerPage);
+            
+            document.getElementById('firstPage').disabled = currentPage === 0;
+            document.getElementById('prevPage').disabled = currentPage === 0;
+            document.getElementById('nextPage').disabled = currentPage === totalPages - 1;
+            document.getElementById('lastPage').disabled = currentPage === totalPages - 1;
+        }
+
+        // Event listeners
+        document.getElementById('firstPage').addEventListener('click', () => {
+            currentPage = 0;
+            displayStickers();
+        });
+
+        document.getElementById('prevPage').addEventListener('click', () => {
+            if (currentPage > 0) {
+                currentPage--;
+                displayStickers();
+            }
+        });
+
+        document.getElementById('nextPage').addEventListener('click', () => {
+            const totalPages = Math.ceil(stickers.length / itemsPerPage);
+            if (currentPage < totalPages - 1) {
+                currentPage++;
+                displayStickers();
+            }
+        });
+
+        document.getElementById('lastPage').addEventListener('click', () => {
+            currentPage = Math.ceil(stickers.length / itemsPerPage) - 1;
+            displayStickers();
+        });
+
+        // Initialize
+        displayStickers();
+    </script>
+</body>
+</html>
