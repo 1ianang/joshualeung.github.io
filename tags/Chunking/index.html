@@ -88,16 +88,13 @@
 <section class="post-item">
     <div class="content">
       <a href="/2025/01/17/rag/chunking/">
-        <h2 class="post-title">RAG Chunking方法概述</h2>
+        <h2 class="post-title">RAG中的文档分块策略</h2>
       </a>
       <a href="/2025/01/17/rag/chunking/">
           <div class="post-abstract">
             
-			    为什么要进行Chunking(文本分块)
-LLM的上下文窗口限制
-更精准的相关信息有助于提高模型输出的准确性
-
-常见的文本分块策略1. 固定字符长度分块顾名思义，就是将文本按照固定字符长度进行分块。实现最简单， 也缺点也最明显，没有考虑到文
+			    在基于 DPR (Deep Passage Retrieval) 的 RAG 系统中， Chunking 是离线索引阶段非常重要的环节， 对RAG的最终效果有重要影响。
+Chunking 将文档划分为多个易于处理的小块，使得在线检索阶段仅需
             
           </div>
       </a>

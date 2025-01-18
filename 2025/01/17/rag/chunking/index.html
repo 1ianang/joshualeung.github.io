@@ -9,29 +9,23 @@
 
 <meta charset="utf-8" >
 
-<title>RAG Chunking方法概述</title>
-<meta name="keywords" content="RAG Chunking方法概述, 击壤而歌">
-<meta name="description" content="为什么要进行Chunking(文本分块)
-LLM的上下文窗口限制
-更精准的相关信息有助于提高模型输出的准确性
-
-常见的文本分块策略1. 固定字符长度分块顾名思义，就是将文本按照固定字符长度进行分块。实现最简单， 也缺点也最明显，没有考虑到文">
+<title>RAG中的文档分块策略</title>
+<meta name="keywords" content="RAG中的文档分块策略, 击壤而歌">
+<meta name="description" content="在基于 DPR (Deep Passage Retrieval) 的 RAG 系统中， Chunking 是离线索引阶段非常重要的环节， 对RAG的最终效果有重要影响。
+Chunking 将文档划分为多个易于处理的小块，使得在线检索阶段仅需">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<meta property="og:title" content="RAG Chunking方法概述">
-<meta property="og:description" content="为什么要进行Chunking(文本分块)
-LLM的上下文窗口限制
-更精准的相关信息有助于提高模型输出的准确性
-
-常见的文本分块策略1. 固定字符长度分块顾名思义，就是将文本按照固定字符长度进行分块。实现最简单， 也缺点也最明显，没有考虑到文">
+<meta property="og:title" content="RAG中的文档分块策略">
+<meta property="og:description" content="在基于 DPR (Deep Passage Retrieval) 的 RAG 系统中， Chunking 是离线索引阶段非常重要的环节， 对RAG的最终效果有重要影响。
+Chunking 将文档划分为多个易于处理的小块，使得在线检索阶段仅需">
 
 <link rel="shortcut icon" href="/favicon.ico">
 <link rel="stylesheet" href="/style/main.css">
 
   <!-- hexo injector head_end start -->
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.12.0/dist/katex.min.css">
-<!-- hexo injector head_end end --><meta name="generator" content="Hexo 7.3.0"></head>
+<!-- hexo injector head_end end --><link rel="stylesheet" href="/style/simple-lightbox.min.css"><meta name="generator" content="Hexo 7.3.0"></head>
   <body>
     <div id="app" class="main">
 
@@ -86,7 +80,7 @@ LLM的上下文窗口限制
   <div class="content-container">
     <div class="post-detail">
       
-      <h2 class="post-title">RAG Chunking方法概述</h2>
+      <h2 class="post-title">RAG中的文档分块策略</h2>
       <div class="post-info post-detail-info">
         <span><i class="icon icon-calendar-outline"></i> 2025-01-17</span>
         
@@ -117,42 +111,42 @@ LLM的上下文窗口限制
       </div>
       <div class="post-content-wrapper">
         <div class="post-content">
-          <h2 id="为什么要进行Chunking-文本分块"><a href="#为什么要进行Chunking-文本分块" class="headerlink" title="为什么要进行Chunking(文本分块)"></a>为什么要进行Chunking(文本分块)</h2><ul>
-<li>LLM的上下文窗口限制</li>
-<li>更精准的相关信息有助于提高模型输出的准确性</li>
-</ul>
-<h2 id="常见的文本分块策略"><a href="#常见的文本分块策略" class="headerlink" title="常见的文本分块策略"></a>常见的文本分块策略</h2><h3 id="1-固定字符长度分块"><a href="#1-固定字符长度分块" class="headerlink" title="1. 固定字符长度分块"></a>1. 固定字符长度分块</h3><p>顾名思义，就是将文本按照固定字符长度进行分块。实现最简单， 也缺点也最明显，没有考虑到文本的结构、信息密度以及语义的一致性。 </p>
-<h3 id="2-固定token长度分块"><a href="#2-固定token长度分块" class="headerlink" title="2. 固定token长度分块"></a>2. 固定token长度分块</h3><p>与固定字符长度分块类似，只不过是按照token数量进行分块。缺点与固定字符长度分块类似。 </p>
-<h3 id="3-递归字符分块"><a href="#3-递归字符分块" class="headerlink" title="3. 递归字符分块"></a>3. 递归字符分块</h3><p>典型的实现是 langchain 的 RecursiveCharacterTextSplitter。<br>用法如下:</p>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">text_splitter = RecursiveCharacterTextSplitter(</span><br><span class="line">    chunk_size = <span class="number">100</span>,</span><br><span class="line">    chunk_overlap  = <span class="number">0</span>,</span><br><span class="line">    length_function = <span class="built_in">len</span>,</span><br><span class="line">)</span><br></pre></td></tr></table></figure>
-<p>主要思想如下:</p>
-<ul>
-<li>维护一个默认的分隔字符列表，按分隔的优先级来排序， 默认为 <code>[&quot;\n\n&quot;, &quot;\n&quot;, &quot; &quot;, &quot;&quot;]</code></li>
-<li>原始文档作为初始 chunk。</li>
-<li>依次检查每个chunk:<ul>
-<li>若它与它前面的chunk的合并长度小于最大长度，则将它与它前面的chunk合并。</li>
-<li>若它的长度小于 chunk_size, 什么也不做， 继续检查下一个chunk。</li>
-<li>若它的长度大于 chunk_size, 则依次通过分隔字符列表中的字符进行分割， 直到分割后的所有chunk的长度都小于 chunk_size。</li>
-</ul>
-</li>
-<li>重复上述步骤， 直到所有chunk的长度都小于 chunk_size。</li>
-</ul>
-<h2 id="语义分块-Semantic-Chunking"><a href="#语义分块-Semantic-Chunking" class="headerlink" title="语义分块 (Semantic Chunking)"></a>语义分块 (Semantic Chunking)</h2><p>即基于语义信息， 将文档划分成包含完整、连贯的语义信息的文本块。</p>
-<p>语言分块有多种实现方法， 包括:</p>
-<h3 id="基于LLM的语义分块"><a href="#基于LLM的语义分块" class="headerlink" title="基于LLM的语义分块"></a>基于LLM的语义分块</h3><p>即让大模型来识别文档中的语义边界， 然后进行分块。</p>
-<p>优点时可以适应不同的文档结构， 缺点是计算成本较高。</p>
-<h3 id="基于规则的语言分块"><a href="#基于规则的语言分块" class="headerlink" title="基于规则的语言分块"></a>基于规则的语言分块</h3><p>利用语言学规则和启发式方法， 将文档划分成语义连贯的文本块。</p>
-<p>优点是速度快， 缺点是对不同的文档类型、风格适应性较差。</p>
-<h3 id="混合方法"><a href="#混合方法" class="headerlink" title="混合方法"></a>混合方法</h3><p>结合统计学、启发式规则和机器学习多种分块方式。能够在速度、效果之间做灵活平衡，但实现较为复杂。</p>
-<h2 id="开源文档分块工具-Chonkie"><a href="#开源文档分块工具-Chonkie" class="headerlink" title="开源文档分块工具 Chonkie"></a>开源文档分块工具 Chonkie</h2><h2 id="参考"><a href="#参考" class="headerlink" title="参考"></a>参考</h2><ol>
+          <p>在基于 DPR (Deep Passage Retrieval) 的 RAG 系统中， Chunking 是离线索引阶段非常重要的环节， 对RAG的最终效果有重要影响。</p>
+<p>Chunking 将文档划分为多个易于处理的小块，使得在线检索阶段仅需返回相关的文档块， 而不是整个文档， 从而避免LLM的上下文窗口限制。然而， 要返回与查询高度相关的文档块， 提前是文档被合理地分块。否则，有效的信息可能会因为错误的分块而被噪声淹没，或者语义和上下文信息被破坏，这些都会降低检索的有效性。 </p>
+<p>文本介绍与Chunking相关的不同策略， 介绍其基本思想、实现细节及使用方式。</p>
+<h2 id="Chunking策略"><a href="#Chunking策略" class="headerlink" title="Chunking策略"></a>Chunking策略</h2><h3 id="1-固定大小分块-Fixed-size-Chunking"><a href="#1-固定大小分块-Fixed-size-Chunking" class="headerlink" title="1. 固定大小分块 (Fixed-size Chunking)"></a>1. 固定大小分块 (Fixed-size Chunking)</h3><p>这是最简单粗暴的分块策略，不考虑文档的内容和结构，将文档划分成固定大小的文本块。 这里的固定大小， 可以是固定的字符、token、单词或者句子个数。 这种方式实现最简单， 同时缺点也最明显: 很容易损坏语义的完整性和连贯性，粒度越细， 损坏越严重。为了缓解这种情况， 通常会在相邻的chunk间有一定重叠(chunk overlap)，但这在带来一定数据冗余的同时， 仍只能有限挽救分块边界对语义的破坏。 </p>
+<p>在 LangChain 中，  可以使用 CharacterTextSplitter 来实现固定字符大小的文档分块。也可以利用 Chonkie 库实现，以下代码实现了固定token数量的文档分块，其中tokenizer使用的是gpt2同款:</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> chonkie <span class="keyword">import</span> TokenChunker</span><br><span class="line"></span><br><span class="line">chunker = TokenChunker(</span><br><span class="line">    tokenizer=<span class="string">&quot;gpt2&quot;</span>,  <span class="comment"># Supports string identifiers</span></span><br><span class="line">    chunk_size=<span class="number">16</span>,    <span class="comment"># Maximum tokens per chunk</span></span><br><span class="line">    chunk_overlap=<span class="number">4</span>  <span class="comment"># Overlap between chunks</span></span><br><span class="line">)</span><br><span class="line"></span><br><span class="line">text = <span class="string">&quot;&quot;&quot;In Chinese mythology, there are five islands in the Bohai Sea, inhabited by immortal beings who have discovered the elixir of life. Many have searched for the islands, but no one have yet found them. I came close, however, four years ago this very week, when I travelled deep into the Nevada desert, to go to Burning Man</span></span><br><span class="line"><span class="string">&quot;&quot;&quot;</span></span><br><span class="line"></span><br><span class="line">chunks = chunker(text)</span><br><span class="line"><span class="keyword">for</span> i, chunk <span class="keyword">in</span> <span class="built_in">enumerate</span>(chunks):</span><br><span class="line">    <span class="built_in">print</span>(<span class="string">f&quot;Chunk <span class="subst">&#123;i&#125;</span> (<span class="subst">&#123;chunk.token_count&#125;</span> tokens): \n<span class="subst">&#123;chunk.text&#125;</span>&quot;</span>)</span><br></pre></td></tr></table></figure>
+
+<p>输出:</p>
+<figure class="highlight txt"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">Chunk 0 (16 tokens): </span><br><span class="line">In Chinese mythology, there are five islands in the Bohai Sea, inhabited by</span><br><span class="line">Chunk 1 (16 tokens): </span><br><span class="line"> Sea, inhabited by immortal beings who have discovered the elixir of life. Many</span><br><span class="line">Chunk 2 (16 tokens): </span><br><span class="line"> of life. Many have searched for the islands, but no one have yet found</span><br><span class="line">Chunk 3 (16 tokens): </span><br><span class="line"> one have yet found them. I came close, however, four years ago this</span><br><span class="line">Chunk 4 (16 tokens): </span><br><span class="line"> four years ago this very week, when I travelled deep into the Nevada desert,</span><br><span class="line">Chunk 5 (10 tokens): </span><br><span class="line"> the Nevada desert, to go to Burning Man</span><br></pre></td></tr></table></figure>
+
+<h3 id="2-递归分块"><a href="#2-递归分块" class="headerlink" title="2. 递归分块"></a>2. 递归分块</h3><p>递归分块是对固定大小分块的一种改进， 其基本思想是基于不同优先级的分隔字符， 以层次和迭代的方式对文档进行分割。 如果初始分割的分块不满足对chunk_size的要求，则在不满足要求的分块上做进一步更细粒度的分割， 同时，对较小的相邻分块进行合并。  </p>
+<p>LangChain提供了递归分块类 RecursiveCharacterTextSplitter, 默认以 <code>[&quot;\n\n&quot;, &quot;\n&quot;, &quot; &quot;, &quot;&quot;]</code> 作为层次分隔符来对文档进行递归分块。<br>用法如下:</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> langchain.text_splitter <span class="keyword">import</span> RecursiveCharacterTextSplitter</span><br><span class="line"></span><br><span class="line">text_splitter = RecursiveCharacterTextSplitter(</span><br><span class="line">    chunk_size = <span class="number">100</span>,</span><br><span class="line">    chunk_overlap  = <span class="number">0</span>,</span><br><span class="line">    length_function = <span class="built_in">len</span>,</span><br><span class="line">)</span><br><span class="line">text_splitter.split_text(documents)</span><br></pre></td></tr></table></figure>
+
+<h3 id="3-基于文档结构的分块"><a href="#3-基于文档结构的分块" class="headerlink" title="3. 基于文档结构的分块"></a>3. 基于文档结构的分块</h3><p>这种方法考虑了内容的流程和内在结构，但可能对缺乏清晰结构的文档效果不佳。 </p>
+<p>例如， 对于Markdown文件， 以Markdown标记作为分割的边界， 对于 HTML文件， 以段落标记(<code>&lt;p&gt;</code>)作为分割的边界等。 在 LangChain 中提供了针对不同文档类型的分块工具， 如MarkdownTextSplitter, PythonCodeTextSplitter 等。 </p>
+<p>对于某些特殊的文档结构， 比如表格， 或非文本模态内容如图片、音频与视频， 可以通过LLM对其进行文字总结后再进行分块处理。 </p>
+<h3 id="4-语义分块"><a href="#4-语义分块" class="headerlink" title="4. 语义分块"></a>4. 语义分块</h3><p>以上分块策略均涉及通过指定分隔符对文档进行分割， 且通常需要指定块的大小。 语义分块则是以语义上下文的相关性来作为分块边界的依据。 它对文档进行基础分块（比如划分为句子)后， 对每个分块进行 Embedding处理。 然后， 以句子出现的先后次序， 评估当前分块 Embedding 与其前面一定窗口内分块Embedding均值的余弦距离。 在余弦距离大于一定阈值(绝对值、分位数等)的地方进行分割。</p>
+<p><a class="simple-lightbox" href="/assets/rag/semantic-chunk-1.webp"><img   src="/images/loading.svg" data-src="/assets/rag/semantic-chunk-1.webp"  lazyload></a></p>
+<h3 id="5-Agentic-分块"><a href="#5-Agentic-分块" class="headerlink" title="5. Agentic 分块"></a>5. Agentic 分块</h3><p>Agentic 分块算法通过LLM来决定如何分块以及分块中应该包含哪些信息。 </p>
+<p>为了得到初始分块， 它首先利用LLM从原始文本中提取出独立陈述（称为 Propositions, 见论文<a target="_blank" rel="noopener" href="https://arxiv.org/pdf/2312.06648">《Dense X Retrieval: What Retrieval Granularity Should We Use?》</a>) </p>
+<p>得到初始分块后， 这些分块将被喂给Agent, 由Agent来决定， 当前的proposition是应该与前一个chunk进行合并， 还是将其创建为一个新的chunk。</p>
+<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>本文介绍了RAG常见的文档分块策略， 介绍了其基础思想和部分实践代码。 </p>
+<h2 id="参考"><a href="#参考" class="headerlink" title="参考"></a>参考</h2><ol>
+<li><a target="_blank" rel="noopener" href="https://medium.com/@anuragmishra_27746five-levels-of-chunking-strategies-in-rag-notes-from-gregs-video-7b735895694d">Five Levels of Chunking Strategies in RAG| Notes from Greg’s Video</a></li>
 <li><a target="_blank" rel="noopener" href="https://dev.to/eteimz/understanding-langchains-recursivecharactertextsplitter-2846">Understanding LangChain’s RecursiveCharacterTextSplitter</a></li>
-<li></li>
+<li><a target="_blank" rel="noopener" href="https://diamantai.substack.com/p/semantic-chunking-improving-ai-information">Semantic Chunking: Improving AI Information Retrieval</a></li>
+<li><a target="_blank" rel="noopener" href="https://mp.weixin.qq.com/s/gsvwS4qlxPiP1yn38SFMIQ">从零开始优化 RAG：7 种 Chunking 方法让你的系统更智能</a></li>
+<li><a target="_blank" rel="noopener" href="https://github.com/FullStackRetrieval-com/RetrievalTutorials/blob/main/5_Levels_Of_Text_Splitting.ipynb">Greg Kamradt的RAG教程代码</a></li>
+<li><a target="_blank" rel="noopener" href="https://arxiv.org/pdf/2312.06648">Dense X Retrieval: What Retrieval Granularity Should We Use?</a></li>
 </ol>
 
         </div>
           
         <div class="top-div">
-          <ol class="top-box"><li class="top-box-item top-box-level-2"><a class="top-box-link" href="#%E4%B8%BA%E4%BB%80%E4%B9%88%E8%A6%81%E8%BF%9B%E8%A1%8CChunking-%E6%96%87%E6%9C%AC%E5%88%86%E5%9D%97"><span class="top-box-text">为什么要进行Chunking(文本分块)</span></a></li><li class="top-box-item top-box-level-2"><a class="top-box-link" href="#%E5%B8%B8%E8%A7%81%E7%9A%84%E6%96%87%E6%9C%AC%E5%88%86%E5%9D%97%E7%AD%96%E7%95%A5"><span class="top-box-text">常见的文本分块策略</span></a><ol class="top-box-child"><li class="top-box-item top-box-level-3"><a class="top-box-link" href="#1-%E5%9B%BA%E5%AE%9A%E5%AD%97%E7%AC%A6%E9%95%BF%E5%BA%A6%E5%88%86%E5%9D%97"><span class="top-box-text">1. 固定字符长度分块</span></a></li><li class="top-box-item top-box-level-3"><a class="top-box-link" href="#2-%E5%9B%BA%E5%AE%9Atoken%E9%95%BF%E5%BA%A6%E5%88%86%E5%9D%97"><span class="top-box-text">2. 固定token长度分块</span></a></li><li class="top-box-item top-box-level-3"><a class="top-box-link" href="#3-%E9%80%92%E5%BD%92%E5%AD%97%E7%AC%A6%E5%88%86%E5%9D%97"><span class="top-box-text">3. 递归字符分块</span></a></li></ol></li><li class="top-box-item top-box-level-2"><a class="top-box-link" href="#%E8%AF%AD%E4%B9%89%E5%88%86%E5%9D%97-Semantic-Chunking"><span class="top-box-text">语义分块 (Semantic Chunking)</span></a><ol class="top-box-child"><li class="top-box-item top-box-level-3"><a class="top-box-link" href="#%E5%9F%BA%E4%BA%8ELLM%E7%9A%84%E8%AF%AD%E4%B9%89%E5%88%86%E5%9D%97"><span class="top-box-text">基于LLM的语义分块</span></a></li><li class="top-box-item top-box-level-3"><a class="top-box-link" href="#%E5%9F%BA%E4%BA%8E%E8%A7%84%E5%88%99%E7%9A%84%E8%AF%AD%E8%A8%80%E5%88%86%E5%9D%97"><span class="top-box-text">基于规则的语言分块</span></a></li><li class="top-box-item top-box-level-3"><a class="top-box-link" href="#%E6%B7%B7%E5%90%88%E6%96%B9%E6%B3%95"><span class="top-box-text">混合方法</span></a></li></ol></li><li class="top-box-item top-box-level-2"><a class="top-box-link" href="#%E5%BC%80%E6%BA%90%E6%96%87%E6%A1%A3%E5%88%86%E5%9D%97%E5%B7%A5%E5%85%B7-Chonkie"><span class="top-box-text">开源文档分块工具 Chonkie</span></a></li><li class="top-box-item top-box-level-2"><a class="top-box-link" href="#%E5%8F%82%E8%80%83"><span class="top-box-text">参考</span></a></li></ol>
+          <ol class="top-box"><li class="top-box-item top-box-level-2"><a class="top-box-link" href="#Chunking%E7%AD%96%E7%95%A5"><span class="top-box-text">Chunking策略</span></a><ol class="top-box-child"><li class="top-box-item top-box-level-3"><a class="top-box-link" href="#1-%E5%9B%BA%E5%AE%9A%E5%A4%A7%E5%B0%8F%E5%88%86%E5%9D%97-Fixed-size-Chunking"><span class="top-box-text">1. 固定大小分块 (Fixed-size Chunking)</span></a></li><li class="top-box-item top-box-level-3"><a class="top-box-link" href="#2-%E9%80%92%E5%BD%92%E5%88%86%E5%9D%97"><span class="top-box-text">2. 递归分块</span></a></li><li class="top-box-item top-box-level-3"><a class="top-box-link" href="#3-%E5%9F%BA%E4%BA%8E%E6%96%87%E6%A1%A3%E7%BB%93%E6%9E%84%E7%9A%84%E5%88%86%E5%9D%97"><span class="top-box-text">3. 基于文档结构的分块</span></a></li><li class="top-box-item top-box-level-3"><a class="top-box-link" href="#4-%E8%AF%AD%E4%B9%89%E5%88%86%E5%9D%97"><span class="top-box-text">4. 语义分块</span></a></li><li class="top-box-item top-box-level-3"><a class="top-box-link" href="#5-Agentic-%E5%88%86%E5%9D%97"><span class="top-box-text">5. Agentic 分块</span></a></li></ol></li><li class="top-box-item top-box-level-2"><a class="top-box-link" href="#%E6%80%BB%E7%BB%93"><span class="top-box-text">总结</span></a></li><li class="top-box-item top-box-level-2"><a class="top-box-link" href="#%E5%8F%82%E8%80%83"><span class="top-box-text">参考</span></a></li></ol>
         </div>
           
       </div>
@@ -160,9 +154,9 @@ LLM的上下文窗口限制
 
     
       <div class="next-post">
-        <a class="purple-link" href="/2025/01/17/rag/query-rewrite-iter-ret-gen/">
+        <a class="purple-link" href="/2025/01/13/introducing-redtrans/">
           <h3 class="post-title">
-            下一篇：RAG Query改写系列5: Iter-RetGen
+            下一篇：Introducing RedTrans - The Missing Translation Tool for REDNote
           </h3>
         </a>
       </div>
@@ -255,6 +249,6 @@ LLM的上下文窗口限制
 
 
 
-  </body>
+  <script src="/js/simple-lightbox.min.js"></script><script>document.addEventListener('DOMContentLoaded', function() {new SimpleLightbox('.post-detail .simple-lightbox', {fileExt: false,captionsData:'alt'});});</script></body>
 </html>
 
