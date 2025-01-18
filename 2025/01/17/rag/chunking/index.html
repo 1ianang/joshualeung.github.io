@@ -112,7 +112,7 @@ Chunking 将文档划分为多个易于处理的小块，使得在线检索阶�
       <div class="post-content-wrapper">
         <div class="post-content">
           <p>在基于 DPR (Deep Passage Retrieval) 的 RAG 系统中， Chunking 是离线索引阶段非常重要的环节， 对RAG的最终效果有重要影响。</p>
-<p>Chunking 将文档划分为多个易于处理的小块，使得在线检索阶段仅需返回相关的文档块， 而不是整个文档， 从而避免LLM的上下文窗口限制。然而， 要返回与查询高度相关的文档块， 提前是文档被合理地分块。否则，有效的信息可能会因为错误的分块而被噪声淹没，或者语义和上下文信息被破坏，这些都会降低检索的有效性。 </p>
+<p>Chunking 将文档划分为多个易于处理的小块，使得在线检索阶段仅需返回相关的文档块， 而不是整个文档， 从而避免LLM的上下文窗口限制。然而， 要返回与查询高度相关的文档块， 提前是文档能被合理地分块。否则，有效的信息可能会因为错误的分块而被噪声淹没，或者语义和上下文信息被破坏，这些都会降低检索的有效性。 </p>
 <p>文本介绍与Chunking相关的不同策略， 介绍其基本思想、实现细节及使用方式。</p>
 <h2 id="Chunking策略"><a href="#Chunking策略" class="headerlink" title="Chunking策略"></a>Chunking策略</h2><h3 id="1-固定大小分块-Fixed-size-Chunking"><a href="#1-固定大小分块-Fixed-size-Chunking" class="headerlink" title="1. 固定大小分块 (Fixed-size Chunking)"></a>1. 固定大小分块 (Fixed-size Chunking)</h3><p>这是最简单粗暴的分块策略，不考虑文档的内容和结构，将文档划分成固定大小的文本块。 这里的固定大小， 可以是固定的字符、token、单词或者句子个数。 这种方式实现最简单， 同时缺点也最明显: 很容易损坏语义的完整性和连贯性，粒度越细， 损坏越严重。为了缓解这种情况， 通常会在相邻的chunk间有一定重叠(chunk overlap)，但这在带来一定数据冗余的同时， 仍只能有限挽救分块边界对语义的破坏。 </p>
 <p>在 LangChain 中，  可以使用 CharacterTextSplitter 来实现固定字符大小的文档分块。也可以利用 Chonkie 库实现，以下代码实现了固定token数量的文档分块，其中tokenizer使用的是gpt2同款:</p>
