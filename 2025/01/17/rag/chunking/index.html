@@ -137,7 +137,7 @@ Chunking 将文档划分为多个易于处理的小块，使得在线检索阶�
 <h3 id="5-Agentic-分块"><a href="#5-Agentic-分块" class="headerlink" title="5. Agentic 分块"></a>5. Agentic 分块</h3><p>Agentic 分块算法通过LLM来决定如何分块以及分块中应该包含哪些信息。 </p>
 <p>为了得到初始分块， 它首先利用LLM从原始文本中提取出独立陈述（称为 Propositions, 见论文<a target="_blank" rel="noopener" href="https://arxiv.org/pdf/2312.06648">《Dense X Retrieval: What Retrieval Granularity Should We Use?》</a>) </p>
 <p>得到初始分块后， 这些分块将被喂给Agent, 由Agent来决定， 当前的proposition是应该与前一个chunk进行合并， 还是将其创建为一个新的chunk。</p>
-<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>本文介绍了RAG常见的文档分块策略， 介绍了其基础思想和部分实践代码。 </p>
+<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>本文介绍了RAG常见的文档分块策略， 介绍了其基础思想和部分实践代码。 在实际应用场景中， 需要综合考虑文档结构、规模、成本与效果因素， 选择合适的分块策略。</p>
 <h2 id="参考"><a href="#参考" class="headerlink" title="参考"></a>参考</h2><ol>
 <li><a target="_blank" rel="noopener" href="https://medium.com/@anuragmishra_27746five-levels-of-chunking-strategies-in-rag-notes-from-gregs-video-7b735895694d">Five Levels of Chunking Strategies in RAG| Notes from Greg’s Video</a></li>
 <li><a target="_blank" rel="noopener" href="https://dev.to/eteimz/understanding-langchains-recursivecharactertextsplitter-2846">Understanding LangChain’s RecursiveCharacterTextSplitter</a></li>
