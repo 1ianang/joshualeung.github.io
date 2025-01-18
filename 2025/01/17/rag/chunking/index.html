@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    
+
+    
+<script>!function(){var e=window.matchMedia&&window.matchMedia("(prefers-color-scheme: dark)").matches,t=localStorage.getItem("use-color-scheme")||"auto";("dark"===t||e&&"light"!==t)&&document.documentElement.classList.toggle("dark",!0)}()</script>
+    
+
+<meta charset="utf-8" >
+
+<title>RAG Chunking方法概述</title>
+<meta name="keywords" content="RAG Chunking方法概述, 击壤而歌">
+<meta name="description" content="为什么要进行Chunking(文本分块)
+LLM的上下文窗口限制
+更精准的相关信息有助于提高模型输出的准确性
+
+常见的文本分块策略1. 固定字符长度分块顾名思义，就是将文本按照固定字符长度进行分块。实现最简单， 也缺点也最明显，没有考虑到文">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta property="og:title" content="RAG Chunking方法概述">
+<meta property="og:description" content="为什么要进行Chunking(文本分块)
+LLM的上下文窗口限制
+更精准的相关信息有助于提高模型输出的准确性
+
+常见的文本分块策略1. 固定字符长度分块顾名思义，就是将文本按照固定字符长度进行分块。实现最简单， 也缺点也最明显，没有考虑到文">
+
+<link rel="shortcut icon" href="/favicon.ico">
+<link rel="stylesheet" href="/style/main.css">
+
+  <!-- hexo injector head_end start -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.12.0/dist/katex.min.css">
+<!-- hexo injector head_end end --><meta name="generator" content="Hexo 7.3.0"></head>
+  <body>
+    <div id="app" class="main">
+
+<div class="site-header-container">
+  <div class="site-header">
+    <div class="left">
+      <a href="http://orrrrz.github.io">
+        <img class="avatar" src="/images/avatar.png" alt="logo" width="32px" height="32px">
+      </a>
+      <a href="http://orrrrz.github.io">
+        <h1 class="site-title">击壤而歌</h1>
+      </a>
+    </div>
+    <div class="right">
+        <i class="icon menu-switch icon-menu-outline" ></i>
+    </div>
+  </div>
+</div>
+
+<div class="menu-container" style="height: 0;opacity: 0;">
+<nav class="menu-list">
+  
+    
+      <a href="/" class="menu purple-link">
+        首页
+      </a>
+    
+  
+    
+      <a href="/tags" class="menu purple-link">
+        标签
+      </a>
+    
+  
+    
+      <a href="/archives" class="menu purple-link">
+        归档
+      </a>
+    
+  
+    
+      <a href="/about" class="menu purple-link">
+        关于
+      </a>
+    
+  
+</nav>
+</div>
+
+
+
+  <div class="content-container">
+    <div class="post-detail">
+      
+      <h2 class="post-title">RAG Chunking方法概述</h2>
+      <div class="post-info post-detail-info">
+        <span><i class="icon icon-calendar-outline"></i> 2025-01-17</span>
+        
+          <span>
+          <i class="icon icon-pricetags-outline"></i>
+            
+              <a href="/tags/RAG/">
+              RAG
+                
+                  ，
+                
+              </a>
+            
+              <a href="/tags/Retrieval-Augmented-Generation/">
+              Retrieval Augmented Generation
+                
+                  ，
+                
+              </a>
+            
+              <a href="/tags/Chunking/">
+              Chunking
+                
+              </a>
+            
+          </span>
+        
+      </div>
+      <div class="post-content-wrapper">
+        <div class="post-content">
+          <h2 id="为什么要进行Chunking-文本分块"><a href="#为什么要进行Chunking-文本分块" class="headerlink" title="为什么要进行Chunking(文本分块)"></a>为什么要进行Chunking(文本分块)</h2><ul>
+<li>LLM的上下文窗口限制</li>
+<li>更精准的相关信息有助于提高模型输出的准确性</li>
+</ul>
+<h2 id="常见的文本分块策略"><a href="#常见的文本分块策略" class="headerlink" title="常见的文本分块策略"></a>常见的文本分块策略</h2><h3 id="1-固定字符长度分块"><a href="#1-固定字符长度分块" class="headerlink" title="1. 固定字符长度分块"></a>1. 固定字符长度分块</h3><p>顾名思义，就是将文本按照固定字符长度进行分块。实现最简单， 也缺点也最明显，没有考虑到文本的结构、信息密度以及语义的一致性。 </p>
+<h3 id="2-固定token长度分块"><a href="#2-固定token长度分块" class="headerlink" title="2. 固定token长度分块"></a>2. 固定token长度分块</h3><p>与固定字符长度分块类似，只不过是按照token数量进行分块。缺点与固定字符长度分块类似。 </p>
+<h3 id="3-递归字符分块"><a href="#3-递归字符分块" class="headerlink" title="3. 递归字符分块"></a>3. 递归字符分块</h3><p>典型的实现是 langchain 的 RecursiveCharacterTextSplitter。<br>用法如下:</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">text_splitter = RecursiveCharacterTextSplitter(</span><br><span class="line">    chunk_size = <span class="number">100</span>,</span><br><span class="line">    chunk_overlap  = <span class="number">0</span>,</span><br><span class="line">    length_function = <span class="built_in">len</span>,</span><br><span class="line">)</span><br></pre></td></tr></table></figure>
+<p>主要思想如下:</p>
+<ul>
+<li>维护一个默认的分隔字符列表，按分隔的优先级来排序， 默认为 <code>[&quot;\n\n&quot;, &quot;\n&quot;, &quot; &quot;, &quot;&quot;]</code></li>
+<li>原始文档作为初始 chunk。</li>
+<li>依次检查每个chunk:<ul>
+<li>若它与它前面的chunk的合并长度小于最大长度，则将它与它前面的chunk合并。</li>
+<li>若它的长度小于 chunk_size, 什么也不做， 继续检查下一个chunk。</li>
+<li>若它的长度大于 chunk_size, 则依次通过分隔字符列表中的字符进行分割， 直到分割后的所有chunk的长度都小于 chunk_size。</li>
+</ul>
+</li>
+<li>重复上述步骤， 直到所有chunk的长度都小于 chunk_size。</li>
+</ul>
+<h2 id="语义分块-Semantic-Chunking"><a href="#语义分块-Semantic-Chunking" class="headerlink" title="语义分块 (Semantic Chunking)"></a>语义分块 (Semantic Chunking)</h2><p>即基于语义信息， 将文档划分成包含完整、连贯的语义信息的文本块。</p>
+<p>语言分块有多种实现方法， 包括:</p>
+<h3 id="基于LLM的语义分块"><a href="#基于LLM的语义分块" class="headerlink" title="基于LLM的语义分块"></a>基于LLM的语义分块</h3><p>即让大模型来识别文档中的语义边界， 然后进行分块。</p>
+<p>优点时可以适应不同的文档结构， 缺点是计算成本较高。</p>
+<h3 id="基于规则的语言分块"><a href="#基于规则的语言分块" class="headerlink" title="基于规则的语言分块"></a>基于规则的语言分块</h3><p>利用语言学规则和启发式方法， 将文档划分成语义连贯的文本块。</p>
+<p>优点是速度快， 缺点是对不同的文档类型、风格适应性较差。</p>
+<h3 id="混合方法"><a href="#混合方法" class="headerlink" title="混合方法"></a>混合方法</h3><p>结合统计学、启发式规则和机器学习多种分块方式。能够在速度、效果之间做灵活平衡，但实现较为复杂。</p>
+<h2 id="开源文档分块工具-Chonkie"><a href="#开源文档分块工具-Chonkie" class="headerlink" title="开源文档分块工具 Chonkie"></a>开源文档分块工具 Chonkie</h2><h2 id="参考"><a href="#参考" class="headerlink" title="参考"></a>参考</h2><ol>
+<li><a target="_blank" rel="noopener" href="https://dev.to/eteimz/understanding-langchains-recursivecharactertextsplitter-2846">Understanding LangChain’s RecursiveCharacterTextSplitter</a></li>
+<li></li>
+</ol>
+
+        </div>
+          
+        <div class="top-div">
+          <ol class="top-box"><li class="top-box-item top-box-level-2"><a class="top-box-link" href="#%E4%B8%BA%E4%BB%80%E4%B9%88%E8%A6%81%E8%BF%9B%E8%A1%8CChunking-%E6%96%87%E6%9C%AC%E5%88%86%E5%9D%97"><span class="top-box-text">为什么要进行Chunking(文本分块)</span></a></li><li class="top-box-item top-box-level-2"><a class="top-box-link" href="#%E5%B8%B8%E8%A7%81%E7%9A%84%E6%96%87%E6%9C%AC%E5%88%86%E5%9D%97%E7%AD%96%E7%95%A5"><span class="top-box-text">常见的文本分块策略</span></a><ol class="top-box-child"><li class="top-box-item top-box-level-3"><a class="top-box-link" href="#1-%E5%9B%BA%E5%AE%9A%E5%AD%97%E7%AC%A6%E9%95%BF%E5%BA%A6%E5%88%86%E5%9D%97"><span class="top-box-text">1. 固定字符长度分块</span></a></li><li class="top-box-item top-box-level-3"><a class="top-box-link" href="#2-%E5%9B%BA%E5%AE%9Atoken%E9%95%BF%E5%BA%A6%E5%88%86%E5%9D%97"><span class="top-box-text">2. 固定token长度分块</span></a></li><li class="top-box-item top-box-level-3"><a class="top-box-link" href="#3-%E9%80%92%E5%BD%92%E5%AD%97%E7%AC%A6%E5%88%86%E5%9D%97"><span class="top-box-text">3. 递归字符分块</span></a></li></ol></li><li class="top-box-item top-box-level-2"><a class="top-box-link" href="#%E8%AF%AD%E4%B9%89%E5%88%86%E5%9D%97-Semantic-Chunking"><span class="top-box-text">语义分块 (Semantic Chunking)</span></a><ol class="top-box-child"><li class="top-box-item top-box-level-3"><a class="top-box-link" href="#%E5%9F%BA%E4%BA%8ELLM%E7%9A%84%E8%AF%AD%E4%B9%89%E5%88%86%E5%9D%97"><span class="top-box-text">基于LLM的语义分块</span></a></li><li class="top-box-item top-box-level-3"><a class="top-box-link" href="#%E5%9F%BA%E4%BA%8E%E8%A7%84%E5%88%99%E7%9A%84%E8%AF%AD%E8%A8%80%E5%88%86%E5%9D%97"><span class="top-box-text">基于规则的语言分块</span></a></li><li class="top-box-item top-box-level-3"><a class="top-box-link" href="#%E6%B7%B7%E5%90%88%E6%96%B9%E6%B3%95"><span class="top-box-text">混合方法</span></a></li></ol></li><li class="top-box-item top-box-level-2"><a class="top-box-link" href="#%E5%BC%80%E6%BA%90%E6%96%87%E6%A1%A3%E5%88%86%E5%9D%97%E5%B7%A5%E5%85%B7-Chonkie"><span class="top-box-text">开源文档分块工具 Chonkie</span></a></li><li class="top-box-item top-box-level-2"><a class="top-box-link" href="#%E5%8F%82%E8%80%83"><span class="top-box-text">参考</span></a></li></ol>
+        </div>
+          
+      </div>
+    </div>
+
+    
+      <div class="next-post">
+        <a class="purple-link" href="/2025/01/17/rag/query-rewrite-iter-ret-gen/">
+          <h3 class="post-title">
+            下一篇：RAG Query改写系列5: Iter-RetGen
+          </h3>
+        </a>
+      </div>
+    
+  </div>
+
+
+    <div id="gitalk-container"></div>
+
+
+
+    <link rel="stylesheet" href="/style/gitalk.min.css"/>
+    <script src="/js/gitalk.min.js"></script>
+    <script>
+        const config = {"clientId":"Ov23ctHktH8663nWo7p3","clientSecret":"17ed39dfe9fd4213784f3600cbb3591c2a2d3180","repository":"orrrrz.github.io","owner":"orrrrz","createIssueManually":false};
+        const gitalk = new Gitalk({
+            clientID: config.clientId,
+            clientSecret: config.clientSecret,
+            repo: config.repository,
+            owner: config.owner,
+            admin: [config.owner],
+            id: location.pathname.slice(1, location.pathname.lastIndexOf('/')).substring(0, 49),       // Ensure uniqueness and length less than 50
+            distractionFreeMode: false,  // Facebook-like distraction free mode
+            createIssueManually: config.createIssueManually ? true : false
+        });
+
+        gitalk.render('gitalk-container')
+
+    </script>
+
+
+
+
+
+
+
+<footer>
+<div class="site-footer">
+  <div class="social-container">
+    
+      
+        <a aria-label="跳转至github" href="https://github.com/orrrrz" target="_blank">
+          <i class="icon icon-github"></i>
+        </a>
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+  </div>
+  
+    Powered by <a href="https://hexo.io/" target="_blank">Hexo</a> <a href="https://github.com/f-dong/hexo-theme-minimalism" target="_blank">Theme</a>
+  
+  
+  
+  
+  
+  
+</div>
+</footer>
+
+
+      </div>
+    </div>
+    
+<script id="hexo-configurations"> window.theme_config = {"image":{"lazyload_enable":true,"photo_zoom":"simple-lightbox"}}; window.is_post = true; </script>
+
+<script src="/js/main.js"></script>
+
+
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-BD6SR7X2TB"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+
+        gtag('config', 'G-BD6SR7X2TB');
+    </script>
+
+
+
+
+
+  </body>
+</html>
+
