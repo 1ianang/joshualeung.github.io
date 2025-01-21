@@ -25,7 +25,7 @@
 
   <!-- hexo injector head_end start -->
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.12.0/dist/katex.min.css">
-<!-- hexo injector head_end end --><meta name="generator" content="Hexo 7.3.0"></head>
+<!-- hexo injector head_end end --><link rel="stylesheet" href="/style/simple-lightbox.min.css"><meta name="generator" content="Hexo 7.3.0"></head>
   <body>
     <div id="app" class="main">
 
@@ -129,6 +129,19 @@
 <p>对假设查询进行向量编码和索引:</p>
 <figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># The vectorstore to use to index the child chunks</span></span><br><span class="line">vectorstore = Chroma(</span><br><span class="line">    collection_name=<span class="string">&quot;hypo-questions&quot;</span>, embedding_function=OpenAIEmbeddings()</span><br><span class="line">)</span><br><span class="line"><span class="comment"># The storage layer for the parent documents</span></span><br><span class="line">store = InMemoryByteStore()</span><br><span class="line">id_key = <span class="string">&quot;doc_id&quot;</span></span><br><span class="line"><span class="comment"># The retriever (empty to start)</span></span><br><span class="line">retriever = MultiVectorRetriever(</span><br><span class="line">    vectorstore=vectorstore,</span><br><span class="line">    byte_store=store,</span><br><span class="line">    id_key=id_key,</span><br><span class="line">)</span><br><span class="line">doc_ids = [<span class="built_in">str</span>(uuid.uuid4()) <span class="keyword">for</span> _ <span class="keyword">in</span> docs]</span><br><span class="line"></span><br><span class="line">question_docs = []</span><br><span class="line"><span class="keyword">for</span> i, question_list <span class="keyword">in</span> <span class="built_in">enumerate</span>(hypothetical_questions):</span><br><span class="line">    question_docs.extend(</span><br><span class="line">        [Document(page_content=s, metadata=&#123;id_key: doc_ids[i]&#125;) <span class="keyword">for</span> s <span class="keyword">in</span> question_list]</span><br><span class="line">    )</span><br><span class="line"></span><br><span class="line">retriever.vectorstore.add_documents(question_docs)</span><br><span class="line">retriever.docstore.mset(<span class="built_in">list</span>(<span class="built_in">zip</span>(doc_ids, docs)))</span><br></pre></td></tr></table></figure>
 
+
+<h2 id="多向量在多模态RAG中的应用"><a href="#多向量在多模态RAG中的应用" class="headerlink" title="多向量在多模态RAG中的应用"></a>多向量在多模态RAG中的应用</h2><p>上面介绍了多向量在文本模态上创建多向量的三种方法。 多向量只是一种将检索表征与合成表征解耦的索引范式， 对于多模态内容来说， 这也同样适用。 </p>
+<p><a class="simple-lightbox" target="_blank" rel="noopener" href="https://blog.langchain.dev/content/images/2023/10/mvr_overview.png"><img   src="/images/loading.svg" data-src="https://blog.langchain.dev/content/images/2023/10/mvr_overview.png"  lazyload></a></p>
+<p>在文章 <a target="_blank" rel="noopener" href="https://blog.langchain.dev/semi-structured-multi-modal-rag/">Multi-Vector Retriever for RAG on tables, text, and images</a>中， LangChain 团队介绍了将多向量应用于多模态内容的几种方式: </p>
+<ul>
+<li><p>使用多模态向量模型(如CLIP)来同时对图像和文本进行向量化， 通过多模态向量来检索， 但返回原始图像。 。</p>
+</li>
+<li><p>利用多模态LLM(如GPT4-V、LLaVA或FUYU-8b)来为图像生成文本摘要并Embedding。基于查询和摘要的相似度来检索，同时返回摘要给LLM。</p>
+</li>
+<li><p>利用多模态LLM(如GPT4-V、LLaVA或FUYU-8b)来为图像生成文本摘要并Embedding, 基于查询和摘要的相似度来检索， 但返回原始图片。</p>
+</li>
+</ul>
+<p>具体使用哪种方式取决于具体的应用场景， 以及对成本、性能、检索质量的综合考量。 </p>
 <h2 id="参考"><a href="#参考" class="headerlink" title="参考"></a>参考</h2><ul>
 <li><a target="_blank" rel="noopener" href="https://python.langchain.com/docs/how_to/multi_vector/">How to retrieve using multiple vectors per document</a></li>
 </ul>
@@ -136,7 +149,7 @@
         </div>
           
         <div class="top-div">
-          <ol class="top-box"><li class="top-box-item top-box-level-2"><a class="top-box-link" href="#%E5%87%86%E5%A4%87%E5%B7%A5%E4%BD%9C"><span class="top-box-text">准备工作</span></a></li><li class="top-box-item top-box-level-2"><a class="top-box-link" href="#%E5%AD%90%E5%88%86%E5%9D%97%E5%90%91%E9%87%8F"><span class="top-box-text">子分块向量</span></a></li><li class="top-box-item top-box-level-2"><a class="top-box-link" href="#%E6%96%87%E6%A1%A3%E6%91%98%E8%A6%81"><span class="top-box-text">文档摘要</span></a></li><li class="top-box-item top-box-level-2"><a class="top-box-link" href="#%E5%81%87%E8%AE%BE%E6%9F%A5%E8%AF%A2"><span class="top-box-text">假设查询</span></a></li><li class="top-box-item top-box-level-2"><a class="top-box-link" href="#%E5%8F%82%E8%80%83"><span class="top-box-text">参考</span></a></li></ol>
+          <ol class="top-box"><li class="top-box-item top-box-level-2"><a class="top-box-link" href="#%E5%87%86%E5%A4%87%E5%B7%A5%E4%BD%9C"><span class="top-box-text">准备工作</span></a></li><li class="top-box-item top-box-level-2"><a class="top-box-link" href="#%E5%AD%90%E5%88%86%E5%9D%97%E5%90%91%E9%87%8F"><span class="top-box-text">子分块向量</span></a></li><li class="top-box-item top-box-level-2"><a class="top-box-link" href="#%E6%96%87%E6%A1%A3%E6%91%98%E8%A6%81"><span class="top-box-text">文档摘要</span></a></li><li class="top-box-item top-box-level-2"><a class="top-box-link" href="#%E5%81%87%E8%AE%BE%E6%9F%A5%E8%AF%A2"><span class="top-box-text">假设查询</span></a></li><li class="top-box-item top-box-level-2"><a class="top-box-link" href="#%E5%A4%9A%E5%90%91%E9%87%8F%E5%9C%A8%E5%A4%9A%E6%A8%A1%E6%80%81RAG%E4%B8%AD%E7%9A%84%E5%BA%94%E7%94%A8"><span class="top-box-text">多向量在多模态RAG中的应用</span></a></li><li class="top-box-item top-box-level-2"><a class="top-box-link" href="#%E5%8F%82%E8%80%83"><span class="top-box-text">参考</span></a></li></ol>
         </div>
           
       </div>
@@ -239,6 +252,6 @@
 
 
 
-  </body>
+  <script src="/js/simple-lightbox.min.js"></script><script>document.addEventListener('DOMContentLoaded', function() {new SimpleLightbox('.post-detail .simple-lightbox', {fileExt: false,captionsData:'alt'});});</script></body>
 </html>
 
