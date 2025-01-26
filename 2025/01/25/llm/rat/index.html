@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    
+
+    
+<script>!function(){var e=window.matchMedia&&window.matchMedia("(prefers-color-scheme: dark)").matches,t=localStorage.getItem("use-color-scheme")||"auto";("dark"===t||e&&"light"!==t)&&document.documentElement.classList.toggle("dark",!0)}()</script>
+    
+
+<meta charset="utf-8" >
+
+<title>关于 DeepSeek-R1 的一些有趣实验和探索</title>
+<meta name="keywords" content="关于 DeepSeek-R1 的一些有趣实验和探索, 击壤而歌">
+<meta name="description" content="RAT: 思考与响应的解耦RAT(Retrieval Augmented Thinking) 是由EverArt创始人 Pietro Schirano提出的一种混合LLM生成范式， 其主要思想是利用DeepSeek-R1的推理能力来指导其他">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta property="og:title" content="关于 DeepSeek-R1 的一些有趣实验和探索">
+<meta property="og:description" content="RAT: 思考与响应的解耦RAT(Retrieval Augmented Thinking) 是由EverArt创始人 Pietro Schirano提出的一种混合LLM生成范式， 其主要思想是利用DeepSeek-R1的推理能力来指导其他">
+
+<link rel="shortcut icon" href="/favicon.ico">
+<link rel="stylesheet" href="/style/main.css">
+
+  <!-- hexo injector head_end start -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.12.0/dist/katex.min.css">
+<!-- hexo injector head_end end --><link rel="stylesheet" href="/style/simple-lightbox.min.css"><meta name="generator" content="Hexo 7.3.0"></head>
+  <body>
+    <div id="app" class="main">
+
+<div class="site-header-container">
+  <div class="site-header">
+    <div class="left">
+      <a href="http://orrrrz.github.io">
+        <img class="avatar" src="/images/avatar.png" alt="logo" width="32px" height="32px">
+      </a>
+      <a href="http://orrrrz.github.io">
+        <h1 class="site-title">击壤而歌</h1>
+      </a>
+    </div>
+    <div class="right">
+        <i class="icon menu-switch icon-menu-outline" ></i>
+    </div>
+  </div>
+</div>
+
+<div class="menu-container" style="height: 0;opacity: 0;">
+<nav class="menu-list">
+  
+    
+      <a href="/" class="menu purple-link">
+        首页
+      </a>
+    
+  
+    
+      <a href="/tags" class="menu purple-link">
+        标签
+      </a>
+    
+  
+    
+      <a href="/archives" class="menu purple-link">
+        归档
+      </a>
+    
+  
+    
+      <a href="/about" class="menu purple-link">
+        关于
+      </a>
+    
+  
+</nav>
+</div>
+
+
+
+  <div class="content-container">
+    <div class="post-detail">
+      
+      <h2 class="post-title">关于 DeepSeek-R1 的一些有趣实验和探索</h2>
+      <div class="post-info post-detail-info">
+        <span><i class="icon icon-calendar-outline"></i> 2025-01-25</span>
+        
+      </div>
+      <div class="post-content-wrapper">
+        <div class="post-content">
+          <h2 id="RAT-思考与响应的解耦"><a href="#RAT-思考与响应的解耦" class="headerlink" title="RAT: 思考与响应的解耦"></a>RAT: 思考与响应的解耦</h2><p><a target="_blank" rel="noopener" href="https://github.com/Doriandarko/RAT-retrieval-augmented-thinking?tab=readme-ov-file">RAT(Retrieval Augmented Thinking)</a> 是由EverArt创始人 <a target="_blank" rel="noopener" href="https://x.com/skirano">Pietro Schirano</a>提出的一种混合LLM生成范式， 其主要思想是利用DeepSeek-R1的推理能力来指导其他LLM进行结构化思考， 从而生成更加准确的结果。</p>
+<p>RAT的想法来源于对DeepSeek-R1 API特性的诗意破解: 在调用 deepseek-reasoner (即DeepSeek-R1) 模型时， 将最终响应token长度设置为1，即可使得推理与最终响应分离。</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="variable language_">self</span>.deepseek_messages.append(&#123;<span class="string">&quot;role&quot;</span>: <span class="string">&quot;user&quot;</span>, <span class="string">&quot;content&quot;</span>: user_input&#125;)</span><br><span class="line">response = <span class="variable language_">self</span>.deepseek_client.chat.completions.create(</span><br><span class="line">	model=DEEPSEEK_MODEL,</span><br><span class="line">	max_tokens=<span class="number">1</span>,</span><br><span class="line">	messages=<span class="variable language_">self</span>.deepseek_messages,</span><br><span class="line">	stream=<span class="literal">True</span></span><br><span class="line">)</span><br></pre></td></tr></table></figure>
+
+
+<p>RAT的实现非常简单: 获取 R1 的思考过程， 然后将其拼接到响应LLM的提示词中。 </p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">combined_prompt = (</span><br><span class="line">	<span class="string">f&quot;&lt;question&gt;<span class="subst">&#123;user_input&#125;</span>&lt;/question&gt;\n\n&quot;</span></span><br><span class="line">	<span class="string">f&quot;&lt;thinking&gt;<span class="subst">&#123;reasoning&#125;</span>&lt;/thinking&gt;\n\n&quot;</span></span><br><span class="line">)</span><br></pre></td></tr></table></figure>
+
+<p>对于 Claude Sonnet, 由于其API 支持消息预填技术 (Message Pre-filling), 可以将思考过程作为Assistant消息发送, 让模型误以为是自己在思考。</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line">user_message = &#123;</span><br><span class="line">	<span class="string">&quot;role&quot;</span>: <span class="string">&quot;user&quot;</span>,</span><br><span class="line">	<span class="string">&quot;content&quot;</span>: [</span><br><span class="line">		&#123;</span><br><span class="line">			<span class="string">&quot;type&quot;</span>: <span class="string">&quot;text&quot;</span>,</span><br><span class="line">			<span class="string">&quot;text&quot;</span>: user_input</span><br><span class="line">		&#125;</span><br><span class="line">	]</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">assistant_prefill = &#123;</span><br><span class="line">	<span class="string">&quot;role&quot;</span>: <span class="string">&quot;assistant&quot;</span>,</span><br><span class="line">	<span class="string">&quot;content&quot;</span>: [</span><br><span class="line">		&#123;</span><br><span class="line">			<span class="string">&quot;type&quot;</span>: <span class="string">&quot;text&quot;</span>,</span><br><span class="line">			<span class="string">&quot;text&quot;</span>: <span class="string">f&quot;&lt;thinking&gt;<span class="subst">&#123;reasoning&#125;</span>&lt;/thinking&gt;&quot;</span></span><br><span class="line">		&#125;</span><br><span class="line">	]</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">messages = [user_message, assistant_prefill]</span><br></pre></td></tr></table></figure>
+
+<p>据Pietro在X上称， 任何LLM在经过 R1 推理增强后， 效果都大大提升。</p>
+<blockquote>
+<p>From my experience, it makes any LLM perform way better, even the old GPT-4. I know someone ran evaluations on Aider, and this process, using Sonnet as the second LLM, absolutely crushed the benchmarks.</p>
+</blockquote>
+<p>据DeepSeek-R1中宣称， R1虽然在推理能力上相比 DeepSeek-V3 有了大幅提升， 但在函数调用、结构化输出、角色扮演等方面能力有所退化。 通过将思考与响应分离， 可以发挥思考与响应模型各自的优势， 从而得到从内容和格式上都更加准确的结果。</p>
+<p>当然， 口说无凭。 真实效果如何， 需要更加客观、严谨的基准测试。</p>
+<h2 id="R1-Sonnet-代码领域的模型协作"><a href="#R1-Sonnet-代码领域的模型协作" class="headerlink" title="R1 + Sonnet: 代码领域的模型协作"></a>R1 + Sonnet: 代码领域的模型协作</h2><p>Aider 是一款基于命令行的AI结对编程工具。1月24日， Aider在其<a target="_blank" rel="noopener" href="https://aider.chat/2025/01/24/r1-sonnet.html">官方博客</a>中宣称，其通过 DeepSeek-R1 和 Claude Sonnet 的模型组合刷新了 polyglot 代码能力基准测试的SOTA 成绩。 (详见  <a target="_blank" rel="noopener" href="https://aider.chat/2025/01/24/r1-sonnet.html">R1+Sonnet set SOTA on aider’s polyglot benchmark</a>)</p>
+<p>在Aider的实验中， R1 被作为 Architect 模型， 用于生成解决问题的路径， 这是推理模型擅长的区域。 Sonnet则被作为Editor 模型，进行具体的代码编辑并应用。 </p>
+<p><a class="simple-lightbox" href="/assets/llm/aider-deepseek-r1-sonnet.png"><img   src="/images/loading.svg" data-src="/assets/llm/aider-deepseek-r1-sonnet.png"  lazyload></a></p>
+<p>R1+Sonnet在 aider polyglot 测试中得到了64%的成绩， 高于 OpenAI O1的 61.7%， 而单独使用R1和Sonnet的成绩分别是56.9%和51.6%。而与前SOTA O1相比， R1 + Sonnet的计算成本节省了14倍。 </p>
+<p>文章中也提到， O1与Sonnet的叠加并没有带来正向提升， 同时， 将Editor模型切换成其他模型也没有带来更多的提升。 与对相对的是， 早期推理模型， 如o1-preview 和 o1-mini， 在与很多Editor模型进行搭配时都有效果上的提升。 </p>
+<p>此外， 文章也指出， 通过将 thinking tokens 注入 Editor 模型的方式实际上效果更差。 </p>
+<blockquote>
+<p>To be clear, the results above are <em>not</em> using R1’s thinking tokens, just the normal final output. R1 is configured in aider’s standard architect role with Sonnet as editor. The benchmark results that used the thinking tokens appear to be worse than the architect&#x2F;editor results shared here.</p>
+</blockquote>
+<p>要在 aider 中指定R1为 Architect模型以及 sonnet作为Editor模型, 可以通过以下方式启动aider:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">export</span> DEEPSEEK_API_KEY=&lt;your-key&gt;</span><br><span class="line"><span class="built_in">export</span> ANTHROPIC_API_KEY=&lt;your-key&gt;</span><br><span class="line"></span><br><span class="line">aider --architect --model r1 --editor-model sonnet</span><br></pre></td></tr></table></figure>
+
+<p>或者在配置文件<code>~/.aider.conf.yml</code>中增加以下配置后直接通过<code>aider</code>命令启动:</p>
+<figure class="highlight txt"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">chat-mode: architect </span><br><span class="line">model: r1 </span><br><span class="line">editor-model: sonnet</span><br></pre></td></tr></table></figure>
+
+<p>Aider博客中提到的这种 R1 + Sonnet 协作方式也在另一款热门的AI编程工具 Cline上得到了推崇。 Cline官方号在其X上写道:</p>
+<figure class="highlight txt"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">Sometimes the best patterns emerge from usage, not design.</span><br><span class="line"></span><br><span class="line">&quot;R1&#x27;s reasoning is incredible for planning, then I switch to Sonnet for the actual coding. It&#x27;s not about picking sides - each model has its strengths.&quot;</span><br></pre></td></tr></table></figure>
+
+<p><a class="simple-lightbox" href="/assets/llm/cline-r1-sonnet.jpeg"><img   src="/images/loading.svg" data-src="/assets/llm/cline-r1-sonnet.jpeg"  lazyload></a></p>
+<p>这种结合R1强大的推理能力和低廉成本， 同时又不丢失Claude 出色的代码编辑能力的组合方式，可以预见会迅速成为AI编程领域的标配。(不知Cursor 何时跟进:))</p>
+<h2 id="PPFO-基于XML的R1提示词模板"><a href="#PPFO-基于XML的R1提示词模板" class="headerlink" title="PPFO:  基于XML的R1提示词模板"></a>PPFO:  基于XML的R1提示词模板</h2><p>PPFO(Purpose, Planning, Format, Output) 是 <a target="_blank" rel="noopener" href="https://x.com/cj_zZZz/status/1882829210550681861">@cj_zZZz</a>提出的一套应用于DeepSeek-R1的提示词框架， 它将提示词拆分成目标、计划、格式和输出四个部分， 并以XML格式组织。 提供尽可能多的细节 ， 同时避免在目标与输出部分使用项目列表符号。 </p>
+<p>示例如下:</p>
+<figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line">PPFO Framework for Deepseek r1</span><br><span class="line"></span><br><span class="line"><span class="tag">&lt;<span class="name">purpose</span>&gt;</span></span><br><span class="line">You are an expert full - stack NextJS developer specializing in building scalable, performant, and maintainable web applications. Your expertise includes server - side rendering (SSR), static site generation (SSG), incremental static regeneration (ISR), and API route optimization. You prioritize clean, idiomatic code and adhere to Next.js best practices, ensuring seamless integration between frontend and backend components. Your goal is to deliver solutions that are not only functional but also optimized for performance, SEO, and user experience.</span><br><span class="line"><span class="tag">&lt;/<span class="name">purpose</span>&gt;</span></span><br><span class="line"></span><br><span class="line"><span class="tag">&lt;<span class="name">planning_rules</span>&gt;</span></span><br><span class="line">- Create a 4 - step plan for each task (e.g., setup, implementation, testing, deployment).</span><br><span class="line">- Display the current step clearly.</span><br><span class="line">- Ask for clarification on ambiguous requirements.</span><br><span class="line">- Optimize for NextJS best practices (e.g., SSR, ISR, API routes).</span><br><span class="line"><span class="tag">&lt;/<span class="name">planning_rules</span>&gt;</span></span><br><span class="line"></span><br><span class="line"><span class="tag">&lt;<span class="name">format_rules</span>&gt;</span></span><br><span class="line">- Use code blocks for components, API routes, and configuration.</span><br><span class="line">- Split long code into logical sections (e.g., frontend, backend, config).</span><br><span class="line">- Create artifacts for file - level tasks (e.g., `page.tsx`, `api/route.ts`).</span><br><span class="line">- Keep responses brief but complete.</span><br><span class="line"><span class="tag">&lt;/<span class="name">format_rules</span>&gt;</span></span><br><span class="line"></span><br><span class="line"><span class="tag">&lt;<span class="name">output</span>&gt;</span></span><br><span class="line">Create responses following these rules. Focus on scalable, performant solutions while maintaining a concise, helpful style.</span><br><span class="line"><span class="tag">&lt;/<span class="name">output</span>&gt;</span></span><br></pre></td></tr></table></figure>
+
+<p>虽然有效性并没有经过严谨的评估， 但多位网友在评论中均表示真的有用。</p>
+
+        </div>
+          
+        <div class="top-div">
+          <ol class="top-box"><li class="top-box-item top-box-level-2"><a class="top-box-link" href="#RAT-%E6%80%9D%E8%80%83%E4%B8%8E%E5%93%8D%E5%BA%94%E7%9A%84%E8%A7%A3%E8%80%A6"><span class="top-box-text">RAT: 思考与响应的解耦</span></a></li><li class="top-box-item top-box-level-2"><a class="top-box-link" href="#R1-Sonnet-%E4%BB%A3%E7%A0%81%E9%A2%86%E5%9F%9F%E7%9A%84%E6%A8%A1%E5%9E%8B%E5%8D%8F%E4%BD%9C"><span class="top-box-text">R1 + Sonnet: 代码领域的模型协作</span></a></li><li class="top-box-item top-box-level-2"><a class="top-box-link" href="#PPFO-%E5%9F%BA%E4%BA%8EXML%E7%9A%84R1%E6%8F%90%E7%A4%BA%E8%AF%8D%E6%A8%A1%E6%9D%BF"><span class="top-box-text">PPFO:  基于XML的R1提示词模板</span></a></li></ol>
+        </div>
+          
+      </div>
+    </div>
+
+    
+      <div class="next-post">
+        <a class="purple-link" href="/2025/01/18/rag/multi-vector/">
+          <h3 class="post-title">
+            下一篇：RAG中的多向量检索实践
+          </h3>
+        </a>
+      </div>
+    
+  </div>
+
+
+    <div id="gitalk-container"></div>
+
+
+
+    <link rel="stylesheet" href="/style/gitalk.min.css"/>
+    <script src="/js/gitalk.min.js"></script>
+    <script>
+        const config = {"clientId":"Ov23ctHktH8663nWo7p3","clientSecret":"17ed39dfe9fd4213784f3600cbb3591c2a2d3180","repository":"orrrrz.github.io","owner":"orrrrz","createIssueManually":false};
+        const gitalk = new Gitalk({
+            clientID: config.clientId,
+            clientSecret: config.clientSecret,
+            repo: config.repository,
+            owner: config.owner,
+            admin: [config.owner],
+            id: location.pathname.slice(1, location.pathname.lastIndexOf('/')).substring(0, 49),       // Ensure uniqueness and length less than 50
+            distractionFreeMode: false,  // Facebook-like distraction free mode
+            createIssueManually: config.createIssueManually ? true : false
+        });
+
+        gitalk.render('gitalk-container')
+
+    </script>
+
+
+
+
+
+
+
+<footer>
+<div class="site-footer">
+  <div class="social-container">
+    
+      
+        <a aria-label="跳转至github" href="https://github.com/orrrrz" target="_blank">
+          <i class="icon icon-github"></i>
+        </a>
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+  </div>
+  
+    Powered by <a href="https://hexo.io/" target="_blank">Hexo</a> <a href="https://github.com/f-dong/hexo-theme-minimalism" target="_blank">Theme</a>
+  
+  
+  
+  
+  
+  
+</div>
+</footer>
+
+
+      </div>
+    </div>
+    
+<script id="hexo-configurations"> window.theme_config = {"image":{"lazyload_enable":true,"photo_zoom":"simple-lightbox"}}; window.is_post = true; </script>
+
+<script src="/js/main.js"></script>
+
+
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-BD6SR7X2TB"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+
+        gtag('config', 'G-BD6SR7X2TB');
+    </script>
+
+
+
+
+
+  <script src="/js/simple-lightbox.min.js"></script><script>document.addEventListener('DOMContentLoaded', function() {new SimpleLightbox('.post-detail .simple-lightbox', {fileExt: false,captionsData:'alt'});});</script></body>
+</html>
+
